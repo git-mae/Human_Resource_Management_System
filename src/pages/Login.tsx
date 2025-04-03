@@ -51,7 +51,7 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-800 to-brand-900 p-4">
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Log in to Crew Compass</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Log in to Pyra</CardTitle>
           <CardDescription className="text-center">
             Enter your credentials to access your account
           </CardDescription>

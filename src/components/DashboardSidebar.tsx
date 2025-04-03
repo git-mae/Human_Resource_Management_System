@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
@@ -75,7 +74,7 @@ const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed 
         <div className={cn("flex items-center overflow-hidden", 
           isCollapsed ? "justify-center w-full" : "justify-start space-x-2"
         )}>
-          {!isCollapsed && <span className="font-bold text-lg">Crew Compass</span>}
+          {!isCollapsed && <span className="font-bold text-lg">Pyra</span>}
           {isCollapsed && <Home size={24} className="text-sidebar-primary" />}
         </div>
         

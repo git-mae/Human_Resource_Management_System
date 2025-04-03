@@ -56,7 +56,7 @@ const DashboardLayout: React.FC = () => {
             >
               <Menu size={20} />
             </Button>
-            <h1 className="text-xl font-semibold">Crew Compass HR</h1>
+            <h1 className="text-xl font-semibold">Pyra HR</h1>
           </div>
           
           <div className="ml-auto flex items-center space-x-4">
