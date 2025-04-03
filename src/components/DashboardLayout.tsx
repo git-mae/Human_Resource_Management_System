@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const DashboardLayout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -62,11 +62,11 @@ const DashboardLayout: React.FC = () => {
           <div className="ml-auto flex items-center space-x-4">
             <div className="text-sm">
               <span className="font-medium">
-                Welcome, {user?.name || 'User'}
+                Welcome, {profile?.name || user?.email?.split('@')[0] || 'User'}
               </span>
             </div>
             <div className="h-8 w-8 rounded-full bg-brand-600 flex items-center justify-center text-white">
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
+              {profile?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
             </div>
           </div>
         </header>

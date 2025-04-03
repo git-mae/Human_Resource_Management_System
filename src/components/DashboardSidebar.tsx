@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 type SidebarProps = {
   isCollapsed: boolean;
@@ -22,7 +23,13 @@ type SidebarProps = {
 };
 
 const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
-  const { logout } = useAuth();
+  const { logout, profile } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   const navItems = [
     { 
@@ -112,7 +119,7 @@ const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed 
           variant="ghost"
           size={isCollapsed ? "icon" : "default"}
           className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          onClick={logout}
+          onClick={handleLogout}
         >
           <LogOut size={20} />
           {!isCollapsed && <span className="ml-2">Logout</span>}
