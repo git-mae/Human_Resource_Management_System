@@ -14,7 +14,9 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { format } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users } from 'lucide-react';
+import { Users, AlertCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { toast } from 'sonner';
 
 // Define the employee type based on the Supabase table structure
 type Employee = {
@@ -35,15 +37,26 @@ const Employees = () => {
   const { data: employees, isLoading, error } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
+      console.log('Fetching employees...');
       const { data, error } = await supabase
         .from('employee')
         .select('*')
         .order('lastname', { ascending: true });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      console.log('Employees data:', data);
       return data as Employee[];
     }
   });
+
+  // If there's an error, show a toast notification
+  if (error) {
+    console.error('Error fetching employees:', error);
+    toast.error('Failed to load employees');
+  }
 
   // Calculate pagination
   const totalPages = employees ? Math.ceil(employees.length / itemsPerPage) : 0;
@@ -79,7 +92,9 @@ const Employees = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{employees?.length || 0}</div>
+            <div className="text-2xl font-bold">
+              {isLoading ? <Skeleton className="h-8 w-20" /> : employees?.length || 0}
+            </div>
             <p className="text-xs text-muted-foreground">Active employees in the organization</p>
           </CardContent>
         </Card>
@@ -92,15 +107,23 @@ const Employees = () => {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="flex justify-center p-4">
-              <div className="h-6 w-6 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            <div className="space-y-3">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
             </div>
           ) : error ? (
-            <div className="text-center text-red-500 p-4">
-              Error loading employees: {(error as Error).message}
+            <div className="flex flex-col items-center justify-center text-red-500 p-8 text-center">
+              <AlertCircle className="h-10 w-10 mb-2" />
+              <h3 className="text-lg font-semibold">Error loading employees</h3>
+              <p className="text-sm text-muted-foreground">
+                {(error as Error).message || 'An unexpected error occurred'}
+              </p>
             </div>
           ) : employees?.length === 0 ? (
-            <div className="text-center text-muted-foreground p-4">
+            <div className="text-center text-muted-foreground p-6">
               No employees found.
             </div>
           ) : (
