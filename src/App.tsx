@@ -12,6 +12,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
 import Dashboard from "@/pages/Dashboard";
+import Employees from "@/pages/Employees";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,8 +37,8 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route path="dashboard" element={<Dashboard />} />
+              <Route path="employees" element={<Employees />} />
               {/* These routes will be implemented in future iterations */}
-              <Route path="employees" element={<div className="p-6">Employees page - Coming soon</div>} />
               <Route path="departments" element={<div className="p-6">Departments page - Coming soon</div>} />
               <Route path="jobs" element={<div className="p-6">Jobs page - Coming soon</div>} />
               <Route path="job-history" element={<div className="p-6">Job History page - Coming soon</div>} />
