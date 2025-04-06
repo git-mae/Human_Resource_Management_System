@@ -14,9 +14,10 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { format } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, AlertCircle } from 'lucide-react';
+import { Users, AlertCircle, Search } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { Input } from '@/components/ui/input';
 
 // Define the employee type based on the Supabase table structure
 type Employee = {
@@ -31,6 +32,7 @@ type Employee = {
 
 const Employees = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
   const itemsPerPage = 10;
 
   // Fetch employees from Supabase
@@ -58,12 +60,31 @@ const Employees = () => {
     toast.error('Failed to load employees');
   }
 
+  // Filter employees based on search query
+  const filteredEmployees = employees?.filter(employee => {
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase().trim();
+    const fullName = `${employee.firstname || ''} ${employee.lastname || ''}`.toLowerCase();
+    
+    return (
+      employee.empno.toLowerCase().includes(query) || 
+      fullName.includes(query)
+    );
+  });
+
   // Calculate pagination
-  const totalPages = employees ? Math.ceil(employees.length / itemsPerPage) : 0;
-  const paginatedEmployees = employees?.slice(
+  const totalPages = filteredEmployees ? Math.ceil(filteredEmployees.length / itemsPerPage) : 0;
+  const paginatedEmployees = filteredEmployees?.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // Reset to first page when search changes
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
 
   // Format date for display
   const formatDate = (dateString: string | null) => {
@@ -104,6 +125,18 @@ const Employees = () => {
         <CardHeader>
           <CardTitle>Employee Directory</CardTitle>
           <CardDescription>Complete list of employees in the organization</CardDescription>
+          <div className="mt-4 relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-4 w-4 text-gray-400" />
+            </div>
+            <Input
+              type="text"
+              placeholder="Search by employee ID or name..."
+              className="pl-10 pr-4"
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -122,9 +155,9 @@ const Employees = () => {
                 {(error as Error).message || 'An unexpected error occurred'}
               </p>
             </div>
-          ) : employees?.length === 0 ? (
+          ) : filteredEmployees?.length === 0 ? (
             <div className="text-center text-muted-foreground p-6">
-              No employees found.
+              {searchQuery ? 'No employees match your search.' : 'No employees found.'}
             </div>
           ) : (
             <>
