@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Table, 
@@ -14,10 +14,38 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { format } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, AlertCircle, Search } from 'lucide-react';
+import { Users, AlertCircle, Search, Plus, Pencil, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useForm } from "react-hook-form";
+import { 
+  Form, 
+  FormControl, 
+  FormField, 
+  FormItem, 
+  FormLabel, 
+  FormMessage 
+} from "@/components/ui/form";
 
 // Define the employee type based on the Supabase table structure
 type Employee = {
@@ -30,10 +58,28 @@ type Employee = {
   sepdate: string | null;
 };
 
+// Form schema for the Employee data
+type EmployeeFormData = {
+  empno: string;
+  firstname: string;
+  lastname: string;
+  gender: string;
+  birthdate: string;
+  hiredate: string;
+  sepdate?: string;
+};
+
 const Employees = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const itemsPerPage = 10;
+  const queryClient = useQueryClient();
+  
+  // Dialog states
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
 
   // Fetch employees from Supabase
   const { data: employees, isLoading, error } = useQuery({
@@ -53,6 +99,122 @@ const Employees = () => {
       return data as Employee[];
     }
   });
+
+  // Add employee mutation
+  const addEmployeeMutation = useMutation({
+    mutationFn: async (newEmployee: EmployeeFormData) => {
+      const { data, error } = await supabase
+        .from('employee')
+        .insert(newEmployee)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      setAddDialogOpen(false);
+      toast.success("Employee added successfully");
+    },
+    onError: (error) => {
+      console.error("Error adding employee:", error);
+      toast.error(`Failed to add employee: ${error.message}`);
+    }
+  });
+
+  // Update employee mutation
+  const updateEmployeeMutation = useMutation({
+    mutationFn: async (updatedEmployee: EmployeeFormData) => {
+      const { data, error } = await supabase
+        .from('employee')
+        .update(updatedEmployee)
+        .eq('empno', updatedEmployee.empno)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      setEditDialogOpen(false);
+      setCurrentEmployee(null);
+      toast.success("Employee updated successfully");
+    },
+    onError: (error) => {
+      console.error("Error updating employee:", error);
+      toast.error(`Failed to update employee: ${error.message}`);
+    }
+  });
+
+  // Delete employee mutation
+  const deleteEmployeeMutation = useMutation({
+    mutationFn: async (empno: string) => {
+      const { error } = await supabase
+        .from('employee')
+        .delete()
+        .eq('empno', empno);
+      
+      if (error) throw error;
+      return empno;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['employees'] });
+      setDeleteDialogOpen(false);
+      setCurrentEmployee(null);
+      toast.success("Employee deleted successfully");
+    },
+    onError: (error) => {
+      console.error("Error deleting employee:", error);
+      toast.error(`Failed to delete employee: ${error.message}`);
+    }
+  });
+
+  // Form setup for add/edit
+  const addEmployeeForm = useForm<EmployeeFormData>({
+    defaultValues: {
+      empno: '',
+      firstname: '',
+      lastname: '',
+      gender: 'M',
+      birthdate: '',
+      hiredate: new Date().toISOString().split('T')[0],
+    }
+  });
+
+  const editEmployeeForm = useForm<EmployeeFormData>({
+    defaultValues: {
+      empno: '',
+      firstname: '',
+      lastname: '',
+      gender: '',
+      birthdate: '',
+      hiredate: '',
+      sepdate: '',
+    }
+  });
+
+  // Handle opening the edit modal
+  const handleEditEmployee = (employee: Employee) => {
+    setCurrentEmployee(employee);
+    editEmployeeForm.reset({
+      empno: employee.empno,
+      firstname: employee.firstname || '',
+      lastname: employee.lastname || '',
+      gender: employee.gender || '',
+      birthdate: employee.birthdate || '',
+      hiredate: employee.hiredate || '',
+      sepdate: employee.sepdate || '',
+    });
+    setEditDialogOpen(true);
+  };
+
+  // Handle opening the delete confirmation
+  const handleDeleteConfirmation = (employee: Employee) => {
+    setCurrentEmployee(employee);
+    setDeleteDialogOpen(true);
+  };
 
   // If there's an error, show a toast notification
   if (error) {
@@ -100,6 +262,19 @@ const Employees = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">Employees</h2>
+        <Button onClick={() => {
+          addEmployeeForm.reset({
+            empno: '',
+            firstname: '',
+            lastname: '',
+            gender: 'M',
+            birthdate: '',
+            hiredate: new Date().toISOString().split('T')[0],
+          });
+          setAddDialogOpen(true);
+        }}>
+          <Plus className="mr-2 h-4 w-4" /> Add Employee
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -171,6 +346,7 @@ const Employees = () => {
                     <TableHead>Birth Date</TableHead>
                     <TableHead>Hire Date</TableHead>
                     <TableHead>Separation Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -184,6 +360,18 @@ const Employees = () => {
                       <TableCell>{formatDate(employee.birthdate)}</TableCell>
                       <TableCell>{formatDate(employee.hiredate)}</TableCell>
                       <TableCell>{employee.sepdate ? formatDate(employee.sepdate) : 'Active'}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="icon" onClick={() => handleEditEmployee(employee)}>
+                            <Pencil className="h-4 w-4" />
+                            <span className="sr-only">Edit</span>
+                          </Button>
+                          <Button variant="outline" size="icon" className="text-destructive" onClick={() => handleDeleteConfirmation(employee)}>
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -225,6 +413,282 @@ const Employees = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Add Employee Dialog */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Add Employee</DialogTitle>
+            <DialogDescription>
+              Create a new employee record. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...addEmployeeForm}>
+            <form onSubmit={addEmployeeForm.handleSubmit((data) => {
+              addEmployeeMutation.mutate(data);
+            })} className="space-y-4">
+              <FormField
+                control={addEmployeeForm.control}
+                name="empno"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Employee ID</FormLabel>
+                    <FormControl>
+                      <Input required placeholder="E.g., E0001" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={addEmployeeForm.control}
+                  name="firstname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input required placeholder="First name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={addEmployeeForm.control}
+                  name="lastname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input required placeholder="Last name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={addEmployeeForm.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gender</FormLabel>
+                    <FormControl>
+                      <select
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        {...field}
+                      >
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={addEmployeeForm.control}
+                  name="birthdate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Birth Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={addEmployeeForm.control}
+                  name="hiredate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hire Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" required {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setAddDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={addEmployeeMutation.isPending}>
+                  {addEmployeeMutation.isPending ? "Saving..." : "Save Employee"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Employee Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Employee</DialogTitle>
+            <DialogDescription>
+              Update employee information. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...editEmployeeForm}>
+            <form onSubmit={editEmployeeForm.handleSubmit((data) => {
+              updateEmployeeMutation.mutate(data);
+            })} className="space-y-4">
+              <FormField
+                control={editEmployeeForm.control}
+                name="empno"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Employee ID</FormLabel>
+                    <FormControl>
+                      <Input readOnly {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={editEmployeeForm.control}
+                  name="firstname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>First Name</FormLabel>
+                      <FormControl>
+                        <Input required placeholder="First name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editEmployeeForm.control}
+                  name="lastname"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Last Name</FormLabel>
+                      <FormControl>
+                        <Input required placeholder="Last name" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={editEmployeeForm.control}
+                name="gender"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Gender</FormLabel>
+                    <FormControl>
+                      <select
+                        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        {...field}
+                      >
+                        <option value="M">Male</option>
+                        <option value="F">Female</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={editEmployeeForm.control}
+                  name="birthdate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Birth Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editEmployeeForm.control}
+                  name="hiredate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hire Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" required {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={editEmployeeForm.control}
+                name="sepdate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Separation Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setEditDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={updateEmployeeMutation.isPending}>
+                  {updateEmployeeMutation.isPending ? "Saving..." : "Update Employee"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the employee
+              record for {currentEmployee?.firstname} {currentEmployee?.lastname}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                if (currentEmployee?.empno) {
+                  deleteEmployeeMutation.mutate(currentEmployee.empno);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={deleteEmployeeMutation.isPending}
+            >
+              {deleteEmployeeMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
