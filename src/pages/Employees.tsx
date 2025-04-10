@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,7 +13,7 @@ import {
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { format } from 'date-fns';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, AlertCircle, Search, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Users, AlertCircle, Search, Plus, Pencil, Trash2, History } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
@@ -46,6 +45,7 @@ import {
   FormLabel, 
   FormMessage 
 } from "@/components/ui/form";
+import JobHistoryDialog from '@/components/JobHistoryDialog';
 
 // Define the employee type based on the Supabase table structure
 type Employee = {
@@ -75,13 +75,12 @@ const Employees = () => {
   const itemsPerPage = 10;
   const queryClient = useQueryClient();
   
-  // Dialog states
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [currentEmployee, setCurrentEmployee] = useState<Employee | null>(null);
+  const [jobHistoryDialogOpen, setJobHistoryDialogOpen] = useState(false);
 
-  // Fetch employees from Supabase
   const { data: employees, isLoading, error } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
@@ -100,7 +99,6 @@ const Employees = () => {
     }
   });
 
-  // Add employee mutation
   const addEmployeeMutation = useMutation({
     mutationFn: async (newEmployee: EmployeeFormData) => {
       const { data, error } = await supabase
@@ -123,7 +121,6 @@ const Employees = () => {
     }
   });
 
-  // Update employee mutation
   const updateEmployeeMutation = useMutation({
     mutationFn: async (updatedEmployee: EmployeeFormData) => {
       const { data, error } = await supabase
@@ -148,7 +145,6 @@ const Employees = () => {
     }
   });
 
-  // Delete employee mutation
   const deleteEmployeeMutation = useMutation({
     mutationFn: async (empno: string) => {
       const { error } = await supabase
@@ -171,7 +167,6 @@ const Employees = () => {
     }
   });
 
-  // Form setup for add/edit
   const addEmployeeForm = useForm<EmployeeFormData>({
     defaultValues: {
       empno: '',
@@ -195,7 +190,6 @@ const Employees = () => {
     }
   });
 
-  // Handle opening the edit modal
   const handleEditEmployee = (employee: Employee) => {
     setCurrentEmployee(employee);
     editEmployeeForm.reset({
@@ -210,19 +204,21 @@ const Employees = () => {
     setEditDialogOpen(true);
   };
 
-  // Handle opening the delete confirmation
+  const handleJobHistory = (employee: Employee) => {
+    setCurrentEmployee(employee);
+    setJobHistoryDialogOpen(true);
+  };
+
   const handleDeleteConfirmation = (employee: Employee) => {
     setCurrentEmployee(employee);
     setDeleteDialogOpen(true);
   };
 
-  // If there's an error, show a toast notification
   if (error) {
     console.error('Error fetching employees:', error);
     toast.error('Failed to load employees');
   }
 
-  // Filter employees based on search query
   const filteredEmployees = employees?.filter(employee => {
     if (!searchQuery.trim()) return true;
     
@@ -235,20 +231,17 @@ const Employees = () => {
     );
   });
 
-  // Calculate pagination
   const totalPages = filteredEmployees ? Math.ceil(filteredEmployees.length / itemsPerPage) : 0;
   const paginatedEmployees = filteredEmployees?.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  // Reset to first page when search changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1);
   };
 
-  // Format date for display
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A';
     try {
@@ -362,6 +355,10 @@ const Employees = () => {
                       <TableCell>{employee.sepdate ? formatDate(employee.sepdate) : 'Active'}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button variant="outline" size="icon" onClick={() => handleJobHistory(employee)}>
+                            <History className="h-4 w-4" />
+                            <span className="sr-only">Job History</span>
+                          </Button>
                           <Button variant="outline" size="icon" onClick={() => handleEditEmployee(employee)}>
                             <Pencil className="h-4 w-4" />
                             <span className="sr-only">Edit</span>
@@ -414,7 +411,6 @@ const Employees = () => {
         </CardContent>
       </Card>
 
-      {/* Add Employee Dialog */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -532,7 +528,6 @@ const Employees = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Employee Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
@@ -663,7 +658,6 @@ const Employees = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -689,6 +683,12 @@ const Employees = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <JobHistoryDialog 
+        isOpen={jobHistoryDialogOpen} 
+        onClose={() => setJobHistoryDialogOpen(false)} 
+        employee={currentEmployee} 
+      />
     </div>
   );
 };
