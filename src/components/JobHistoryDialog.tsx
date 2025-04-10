@@ -82,6 +82,10 @@ interface JobHistoryDialogProps {
 }
 
 const JobHistoryDialog = ({ isOpen, onClose, employee }: JobHistoryDialogProps) => {
+  // Debug logs to help troubleshoot
+  console.log("JobHistoryDialog - isOpen:", isOpen);
+  console.log("JobHistoryDialog - employee:", employee);
+
   const [addJobDialogOpen, setAddJobDialogOpen] = useState(false);
   const [editJobDialogOpen, setEditJobDialogOpen] = useState(false);
   const [deleteJobDialogOpen, setDeleteJobDialogOpen] = useState(false);
@@ -95,6 +99,8 @@ const JobHistoryDialog = ({ isOpen, onClose, employee }: JobHistoryDialogProps) 
     queryFn: async () => {
       if (!employee?.empno) return [];
       
+      console.log("Fetching job histories for employee:", employee.empno);
+      
       const { data, error } = await supabase
         .from('jobhistory')
         .select(`
@@ -105,38 +111,59 @@ const JobHistoryDialog = ({ isOpen, onClose, employee }: JobHistoryDialogProps) 
         .eq('empno', employee.empno)
         .order('effdate', { ascending: false });
       
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error("Error fetching job histories:", error);
+        throw new Error(error.message);
+      }
+      
+      console.log("Job histories fetched:", data);
       return data;
     },
-    enabled: !!employee?.empno
+    enabled: !!employee?.empno && isOpen
   });
 
   // Fetch jobs for dropdown
   const { data: jobs, isLoading: isLoadingJobs } = useQuery({
     queryKey: ['jobs'],
     queryFn: async () => {
+      console.log("Fetching jobs for dropdown");
+      
       const { data, error } = await supabase
         .from('job')
         .select('*')
         .order('jobcode');
       
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error("Error fetching jobs:", error);
+        throw new Error(error.message);
+      }
+      
+      console.log("Jobs fetched:", data);
       return data as Job[];
-    }
+    },
+    enabled: isOpen
   });
 
   // Fetch departments for dropdown
   const { data: departments, isLoading: isLoadingDepts } = useQuery({
     queryKey: ['departments'],
     queryFn: async () => {
+      console.log("Fetching departments for dropdown");
+      
       const { data, error } = await supabase
         .from('department')
         .select('*')
         .order('deptcode');
       
-      if (error) throw new Error(error.message);
+      if (error) {
+        console.error("Error fetching departments:", error);
+        throw new Error(error.message);
+      }
+      
+      console.log("Departments fetched:", data);
       return data as Department[];
-    }
+    },
+    enabled: isOpen
   });
 
   // Form for adding job history
@@ -164,6 +191,7 @@ const JobHistoryDialog = ({ isOpen, onClose, employee }: JobHistoryDialogProps) 
   // Update forms when employee changes
   useEffect(() => {
     if (employee) {
+      console.log("Setting employee in form:", employee.empno);
       addJobForm.setValue('empno', employee.empno);
     }
   }, [employee, addJobForm]);
