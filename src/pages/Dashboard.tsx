@@ -1,4 +1,6 @@
 
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Briefcase, Users, Clock } from 'lucide-react';
 
@@ -6,12 +8,14 @@ const DashboardCard = ({
   title, 
   value, 
   description, 
-  icon 
+  icon,
+  isLoading = false
 }: { 
   title: string; 
   value: string; 
   description: string; 
-  icon: React.ReactNode 
+  icon: React.ReactNode;
+  isLoading?: boolean;
 }) => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -23,19 +27,77 @@ const DashboardCard = ({
       </div>
     </CardHeader>
     <CardContent>
-      <div className="text-2xl font-bold">{value}</div>
+      <div className="text-2xl font-bold">
+        {isLoading ? (
+          <div className="h-6 w-12 bg-gray-200 animate-pulse rounded"></div>
+        ) : (
+          value
+        )}
+      </div>
       <p className="text-xs text-muted-foreground">{description}</p>
     </CardContent>
   </Card>
 );
 
 const Dashboard = () => {
-  // Mock data for dashboard
+  const { data: employees, isLoading: isLoadingEmployees } = useQuery({
+    queryKey: ['employeeCount'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('employee')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) throw new Error(error.message);
+      return count || 0;
+    }
+  });
+
+  const { data: departments, isLoading: isLoadingDepartments } = useQuery({
+    queryKey: ['departmentCount'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('department')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) throw new Error(error.message);
+      return count || 0;
+    }
+  });
+
+  const { data: jobs, isLoading: isLoadingJobs } = useQuery({
+    queryKey: ['jobCount'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('job')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) throw new Error(error.message);
+      return count || 0;
+    }
+  });
+
+  const { data: recentTransfers, isLoading: isLoadingTransfers } = useQuery({
+    queryKey: ['recentTransfersCount'],
+    queryFn: async () => {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { count, error } = await supabase
+        .from('jobhistory')
+        .select('*', { count: 'exact', head: true })
+        .gte('effdate', thirtyDaysAgo.toISOString().split('T')[0]);
+      
+      if (error) throw new Error(error.message);
+      return count || 0;
+    }
+  });
+
+  // Dashboard data from queries
   const dashboardData = {
-    totalEmployees: "124",
-    departments: "8",
-    jobs: "32",
-    recentTransfers: "5"
+    totalEmployees: isLoadingEmployees ? "Loading..." : String(employees),
+    departments: isLoadingDepartments ? "Loading..." : String(departments),
+    jobs: isLoadingJobs ? "Loading..." : String(jobs),
+    recentTransfers: isLoadingTransfers ? "Loading..." : String(recentTransfers)
   };
 
   return (
@@ -50,24 +112,28 @@ const Dashboard = () => {
           value={dashboardData.totalEmployees}
           description="Active employees in the organization"
           icon={<Users size={18} />}
+          isLoading={isLoadingEmployees}
         />
         <DashboardCard
           title="Departments"
           value={dashboardData.departments}
           description="Company departments"
           icon={<Building2 size={18} />}
+          isLoading={isLoadingDepartments}
         />
         <DashboardCard
           title="Job Positions"
           value={dashboardData.jobs}
           description="Available job positions"
           icon={<Briefcase size={18} />}
+          isLoading={isLoadingJobs}
         />
         <DashboardCard
           title="Recent Transfers"
           value={dashboardData.recentTransfers}
           description="Job transfers in the last 30 days"
           icon={<Clock size={18} />}
+          isLoading={isLoadingTransfers}
         />
       </div>
       

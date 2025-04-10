@@ -13,6 +13,9 @@ import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
 import Dashboard from "@/pages/Dashboard";
 import Employees from "@/pages/Employees";
+import Departments from "@/pages/Departments";
+import Jobs from "@/pages/Jobs";
+import JobHistory from "@/pages/JobHistory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,7 +31,7 @@ const App = () => (
             {/* Public routes */}
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             
             {/* Protected routes */}
             <Route path="/" element={
@@ -38,10 +41,9 @@ const App = () => (
             }>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="employees" element={<Employees />} />
-              {/* These routes will be implemented in future iterations */}
-              <Route path="departments" element={<div className="p-6">Departments page - Coming soon</div>} />
-              <Route path="jobs" element={<div className="p-6">Jobs page - Coming soon</div>} />
-              <Route path="job-history" element={<div className="p-6">Job History page - Coming soon</div>} />
+              <Route path="departments" element={<Departments />} />
+              <Route path="jobs" element={<Jobs />} />
+              <Route path="job-history" element={<JobHistory />} />
               <Route path="settings" element={<div className="p-6">Settings page - Coming soon</div>} />
             </Route>
             
