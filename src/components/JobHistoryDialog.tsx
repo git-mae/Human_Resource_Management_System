@@ -612,7 +612,7 @@ const JobHistoryDialog = ({ isOpen, onClose, employee }: JobHistoryDialogProps) 
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => setEditJobDialogOpen(false)}
+                  onClick={() => setEditDialogOpen(false)}
                 >
                   Cancel
                 </Button>

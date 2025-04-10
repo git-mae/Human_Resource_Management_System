@@ -47,7 +47,6 @@ import {
 } from "@/components/ui/form";
 import JobHistoryDialog from '@/components/JobHistoryDialog';
 
-// Define the employee type based on the Supabase table structure
 type Employee = {
   empno: string;
   firstname: string | null;
@@ -58,7 +57,6 @@ type Employee = {
   sepdate: string | null;
 };
 
-// Form schema for the Employee data
 type EmployeeFormData = {
   empno: string;
   firstname: string;
@@ -205,6 +203,7 @@ const Employees = () => {
   };
 
   const handleJobHistory = (employee: Employee) => {
+    console.log("Opening job history dialog for employee:", employee);
     setCurrentEmployee(employee);
     setJobHistoryDialogOpen(true);
   };
@@ -641,6 +640,20 @@ const Employees = () => {
                   </FormItem>
                 )}
               />
+              <div className="flex justify-between items-center pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    if (currentEmployee) {
+                      handleJobHistory(currentEmployee);
+                    }
+                  }}
+                >
+                  <History className="mr-2 h-4 w-4" />
+                  Manage Job History
+                </Button>
+              </div>
               <DialogFooter>
                 <Button 
                   type="button" 
@@ -686,8 +699,11 @@ const Employees = () => {
 
       <JobHistoryDialog 
         isOpen={jobHistoryDialogOpen} 
-        onClose={() => setJobHistoryDialogOpen(false)} 
-        employee={currentEmployee} 
+        onClose={() => {
+          console.log("Closing job history dialog");
+          setJobHistoryDialogOpen(false);
+        }} 
+        employee={currentEmployee}
       />
     </div>
   );
