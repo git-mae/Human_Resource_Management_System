@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Briefcase, Users, Clock } from 'lucide-react';
+import { useEmployeeContext } from '@/contexts/EmployeeContext';
 
 const DashboardCard = ({ 
   title, 
@@ -40,17 +41,8 @@ const DashboardCard = ({
 );
 
 const Dashboard = () => {
-  const { data: employees, isLoading: isLoadingEmployees } = useQuery({
-    queryKey: ['employeeCount'],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('employee')
-        .select('*', { count: 'exact', head: true });
-      
-      if (error) throw new Error(error.message);
-      return count || 0;
-    }
-  });
+  // Use the shared employee count from context
+  const { totalEmployees, isLoading: isLoadingEmployees } = useEmployeeContext();
 
   const { data: departments, isLoading: isLoadingDepartments } = useQuery({
     queryKey: ['departmentCount'],
@@ -94,7 +86,7 @@ const Dashboard = () => {
 
   // Dashboard data from queries
   const dashboardData = {
-    totalEmployees: isLoadingEmployees ? "Loading..." : String(employees),
+    totalEmployees: isLoadingEmployees ? "Loading..." : String(totalEmployees),
     departments: isLoadingDepartments ? "Loading..." : String(departments),
     jobs: isLoadingJobs ? "Loading..." : String(jobs),
     recentTransfers: isLoadingTransfers ? "Loading..." : String(recentTransfers)

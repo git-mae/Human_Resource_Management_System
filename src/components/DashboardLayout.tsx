@@ -3,13 +3,40 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Menu } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import ProfileEditDialog from './ProfileEditDialog';
+import { supabase } from '@/integrations/supabase/client';
 
 const DashboardLayout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const { user, profile } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (user?.id) {
+      fetchAvatar(user.id);
+    }
+  }, [user?.id]);
+
+  const fetchAvatar = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .storage
+        .from('avatars')
+        .getPublicUrl(`${userId}/avatar`);
+      
+      if (data?.publicUrl) {
+        // Add a cache buster to prevent browser caching
+        setAvatarUrl(`${data.publicUrl}?t=${new Date().getTime()}`);
+      }
+    } catch (error) {
+      console.error('Error fetching avatar:', error);
+    }
+  };
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -60,13 +87,25 @@ const DashboardLayout: React.FC = () => {
           </div>
           
           <div className="ml-auto flex items-center space-x-4">
-            <div className="text-sm">
+            <div 
+              className="text-sm cursor-pointer hover:underline"
+              onClick={() => setProfileDialogOpen(true)}
+            >
               <span className="font-medium">
                 Welcome, {profile?.name || user?.email?.split('@')[0] || 'User'}
               </span>
             </div>
-            <div className="h-8 w-8 rounded-full bg-brand-600 flex items-center justify-center text-white">
-              {profile?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || 'U'}
+            <div 
+              className="cursor-pointer"
+              onClick={() => setProfileDialogOpen(true)}
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={avatarUrl || ""} />
+                <AvatarFallback className="bg-brand-600 text-white">
+                  {profile?.name?.charAt(0).toUpperCase() || 
+                   user?.email?.charAt(0).toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
             </div>
           </div>
         </header>
@@ -75,6 +114,11 @@ const DashboardLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      <ProfileEditDialog 
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
     </div>
   );
 };

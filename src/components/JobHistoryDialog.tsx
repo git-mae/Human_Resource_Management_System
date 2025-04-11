@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -612,7 +611,7 @@ const JobHistoryDialog = ({ isOpen, onClose, employee }: JobHistoryDialogProps) 
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => setEditDialogOpen(false)}
+                  onClick={() => setEditJobDialogOpen(false)}
                 >
                   Cancel
                 </Button>

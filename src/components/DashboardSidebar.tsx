@@ -9,7 +9,8 @@ import {
   LayoutDashboard, 
   LogOut, 
   Settings, 
-  Users 
+  Users,
+  FileText 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -55,6 +56,11 @@ const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed 
       label: 'Job History', 
       icon: <ClipboardList size={20} />, 
       href: '/job-history' 
+    },
+    { 
+      label: 'Reports', 
+      icon: <FileText size={20} />, 
+      href: '/reports' 
     },
     { 
       label: 'Settings', 
