@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,10 +17,7 @@ import {
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-// Fix jspdf import
 import jsPDF from 'jspdf';
-// Import jspdf-autotable with proper comment to avoid TypeScript errors
-// @ts-ignore - jspdf-autotable types are not fully compatible
 import 'jspdf-autotable';
 
 type JobHistory = {
@@ -56,7 +52,6 @@ const Reports = () => {
     queryFn: async () => {
       if (!searchQuery.trim()) return null;
 
-      // First get the employee
       const { data: employee, error: empError } = await supabase
         .from('employee')
         .select('*')
@@ -71,7 +66,6 @@ const Reports = () => {
 
       if (!employee) return null;
       
-      // Then get their job history
       const { data: jobHistory, error: jobError } = await supabase
         .from('jobhistory')
         .select(`
@@ -104,7 +98,7 @@ const Reports = () => {
         jobHistory: formattedJobHistory
       } as EmployeeWithJobs;
     },
-    enabled: false // Don't run automatically, only when user submits search
+    enabled: false
   });
 
   const handleSearch = (e: React.FormEvent) => {
@@ -118,16 +112,13 @@ const Reports = () => {
     try {
       const doc = new jsPDF();
       
-      // Add title
       doc.setFontSize(18);
       doc.text(`Employee Job History Report`, 14, 22);
       
-      // Add employee details
       doc.setFontSize(12);
       doc.text(`Employee: ${employeeData.firstname} ${employeeData.lastname} (${employeeData.empno})`, 14, 32);
       doc.text(`Hire Date: ${format(new Date(employeeData.hiredate || ''), 'PP')}`, 14, 38);
       
-      // Add job history table
       const tableColumn = ["Effective Date", "Job", "Department", "Salary"];
       const tableRows: string[][] = [];
 
@@ -143,7 +134,6 @@ const Reports = () => {
         tableRows.push(jobData);
       });
 
-      // @ts-ignore - jspdf-autotable types are not included in TS
       doc.autoTable({
         head: [tableColumn],
         body: tableRows,
@@ -163,7 +153,6 @@ const Reports = () => {
     }
   };
 
-  // Update employeeData when search results change
   if (searchResults && searchResults !== employeeData) {
     setEmployeeData(searchResults);
   }
