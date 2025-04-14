@@ -18,7 +18,10 @@ import {
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+// Fix jspdf import
 import jsPDF from 'jspdf';
+// Import jspdf-autotable with proper comment to avoid TypeScript errors
+// @ts-ignore - jspdf-autotable types are not fully compatible
 import 'jspdf-autotable';
 
 type JobHistory = {

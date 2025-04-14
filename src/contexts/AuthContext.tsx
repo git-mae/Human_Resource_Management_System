@@ -19,6 +19,7 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<boolean>;
   signup: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  refreshProfile: () => Promise<void>; // Added this method
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -89,6 +90,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setProfile(data as Profile);
     } catch (error) {
       console.error('Error in fetchProfile:', error);
+    }
+  };
+
+  // Add refreshProfile method
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchProfile(user.id);
     }
   };
 
@@ -165,6 +173,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         signup,
         logout,
+        refreshProfile, // Add the refreshProfile function
       }}
     >
       {children}
