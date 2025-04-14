@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ const DashboardLayout: React.FC = () => {
   const { user, profile } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (user?.id) {
       fetchAvatar(user.id);
     }
