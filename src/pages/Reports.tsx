@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,7 +19,15 @@ import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
+// Import jspdf-autotable properly with type augmentation
 import 'jspdf-autotable';
+
+// Extend jsPDF with autoTable method for TypeScript
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 type JobHistory = {
   empno: string;
@@ -134,6 +143,7 @@ const Reports = () => {
         tableRows.push(jobData);
       });
 
+      // Now TypeScript recognizes autoTable as a valid method
       doc.autoTable({
         head: [tableColumn],
         body: tableRows,
