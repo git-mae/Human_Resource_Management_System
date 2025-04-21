@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,7 +15,6 @@ import Dashboard from "@/pages/Dashboard";
 import Employees from "@/pages/Employees";
 import Departments from "@/pages/Departments";
 import Jobs from "@/pages/Jobs";
-import JobHistory from "@/pages/JobHistory";
 import Reports from "@/pages/Reports";
 import NotFound from "./pages/NotFound";
 
@@ -54,7 +52,6 @@ const App = () => (
                 <Route path="employees" element={<Employees />} />
                 <Route path="departments" element={<Departments />} />
                 <Route path="jobs" element={<Jobs />} />
-                <Route path="job-history" element={<JobHistory />} />
                 <Route path="reports" element={<Reports />} />
                 <Route path="settings" element={<div className="p-6">Settings page - Coming soon</div>} />
               </Route>

@@ -53,11 +53,6 @@ const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed 
       href: '/jobs' 
     },
     { 
-      label: 'Job History', 
-      icon: <ClipboardList size={20} />, 
-      href: '/job-history' 
-    },
-    { 
       label: 'Reports', 
       icon: <FileText size={20} />, 
       href: '/reports' 
