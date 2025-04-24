@@ -34,14 +34,20 @@ export type Database = {
         Row: {
           deptcode: string
           deptname: string | null
+          stamp: string | null
+          status: string | null
         }
         Insert: {
           deptcode: string
           deptname?: string | null
+          stamp?: string | null
+          status?: string | null
         }
         Update: {
           deptcode?: string
           deptname?: string | null
+          stamp?: string | null
+          status?: string | null
         }
         Relationships: []
       }
@@ -54,6 +60,8 @@ export type Database = {
           hiredate: string | null
           lastname: string | null
           sepdate: string | null
+          stamp: string | null
+          status: string | null
         }
         Insert: {
           birthdate?: string | null
@@ -63,6 +71,8 @@ export type Database = {
           hiredate?: string | null
           lastname?: string | null
           sepdate?: string | null
+          stamp?: string | null
+          status?: string | null
         }
         Update: {
           birthdate?: string | null
@@ -72,6 +82,8 @@ export type Database = {
           hiredate?: string | null
           lastname?: string | null
           sepdate?: string | null
+          stamp?: string | null
+          status?: string | null
         }
         Relationships: []
       }
@@ -79,14 +91,20 @@ export type Database = {
         Row: {
           jobcode: string
           jobdesc: string | null
+          stamp: string | null
+          status: string | null
         }
         Insert: {
           jobcode: string
           jobdesc?: string | null
+          stamp?: string | null
+          status?: string | null
         }
         Update: {
           jobcode?: string
           jobdesc?: string | null
+          stamp?: string | null
+          status?: string | null
         }
         Relationships: []
       }
@@ -97,6 +115,8 @@ export type Database = {
           empno: string
           jobcode: string
           salary: number | null
+          stamp: string | null
+          status: string | null
         }
         Insert: {
           deptcode?: string | null
@@ -104,6 +124,8 @@ export type Database = {
           empno: string
           jobcode: string
           salary?: number | null
+          stamp?: string | null
+          status?: string | null
         }
         Update: {
           deptcode?: string | null
@@ -111,6 +133,8 @@ export type Database = {
           empno?: string
           jobcode?: string
           salary?: number | null
+          stamp?: string | null
+          status?: string | null
         }
         Relationships: [
           {
@@ -299,6 +323,71 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "sales"
             referencedColumns: ["transno"]
+          },
+        ]
+      }
+      user_permissions: {
+        Row: {
+          can_add_department: boolean | null
+          can_add_employee: boolean | null
+          can_add_job: boolean | null
+          can_add_jobhistory: boolean | null
+          can_delete_department: boolean | null
+          can_delete_employee: boolean | null
+          can_delete_job: boolean | null
+          can_delete_jobhistory: boolean | null
+          can_edit_department: boolean | null
+          can_edit_employee: boolean | null
+          can_edit_job: boolean | null
+          can_edit_jobhistory: boolean | null
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          can_add_department?: boolean | null
+          can_add_employee?: boolean | null
+          can_add_job?: boolean | null
+          can_add_jobhistory?: boolean | null
+          can_delete_department?: boolean | null
+          can_delete_employee?: boolean | null
+          can_delete_job?: boolean | null
+          can_delete_jobhistory?: boolean | null
+          can_edit_department?: boolean | null
+          can_edit_employee?: boolean | null
+          can_edit_job?: boolean | null
+          can_edit_jobhistory?: boolean | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          can_add_department?: boolean | null
+          can_add_employee?: boolean | null
+          can_add_job?: boolean | null
+          can_add_jobhistory?: boolean | null
+          can_delete_department?: boolean | null
+          can_delete_employee?: boolean | null
+          can_delete_job?: boolean | null
+          can_delete_jobhistory?: boolean | null
+          can_edit_department?: boolean | null
+          can_edit_employee?: boolean | null
+          can_edit_job?: boolean | null
+          can_edit_jobhistory?: boolean | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_permissions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }

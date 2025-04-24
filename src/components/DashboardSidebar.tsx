@@ -1,16 +1,17 @@
+
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Briefcase, 
   Building2, 
   ChevronLeft,
-  ClipboardList, 
+  FileText, 
   Home, 
   LayoutDashboard, 
   LogOut, 
   Settings, 
   Users,
-  FileText 
+  UserCog
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -23,7 +24,7 @@ type SidebarProps = {
 };
 
 const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
-  const { logout, profile } = useAuth();
+  const { logout, profile, isAdmin } = useAuth();
   const navigate = useNavigate();
   
   const handleLogout = async () => {
@@ -57,6 +58,11 @@ const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed 
       icon: <FileText size={20} />, 
       href: '/reports' 
     },
+    ...(isAdmin ? [{ 
+      label: 'User Management', 
+      icon: <UserCog size={20} />, 
+      href: '/user-management' 
+    }] : []),
     { 
       label: 'Settings', 
       icon: <Settings size={20} />, 

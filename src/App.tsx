@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +17,7 @@ import Employees from "@/pages/Employees";
 import Departments from "@/pages/Departments";
 import Jobs from "@/pages/Jobs";
 import Reports from "@/pages/Reports";
+import UserManagement from "@/pages/UserManagement";
 import NotFound from "./pages/NotFound";
 
 // Create a new instance of QueryClient with better error handling
@@ -53,6 +55,7 @@ const App = () => (
                 <Route path="departments" element={<Departments />} />
                 <Route path="jobs" element={<Jobs />} />
                 <Route path="reports" element={<Reports />} />
+                <Route path="user-management" element={<UserManagement />} />
                 <Route path="settings" element={<div className="p-6">Settings page - Coming soon</div>} />
               </Route>
               

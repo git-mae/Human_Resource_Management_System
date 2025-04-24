@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,9 +18,25 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [blockAlert, setBlockAlert] = useState(false);
   
-  const { login } = useAuth();
+  const { login, isAuthenticated, profile, isBlocked } = useAuth();
   const navigate = useNavigate();
+
+  // Check if the user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isBlocked) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate, isBlocked]);
+
+  // Check for URL parameters indicating a blocked account
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('blocked') === 'true') {
+      setBlockAlert(true);
+    }
+  }, []);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -58,6 +76,14 @@ const Login = () => {
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
+            {blockAlert && (
+              <Alert variant="destructive">
+                <AlertDescription>
+                  Your account has been blocked. Please contact an administrator.
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 

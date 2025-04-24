@@ -9,15 +9,20 @@ type ProtectedRouteProps = {
 };
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, profile } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      toast.error('Please log in to access this page');
-      navigate('/login');
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        toast.error('Please log in to access this page');
+        navigate('/login');
+      } else if (profile?.role === 'blocked') {
+        toast.error('Your account has been blocked. Please contact an administrator.');
+        navigate('/login');
+      }
     }
-  }, [isAuthenticated, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate, profile]);
 
   if (isLoading) {
     return (
@@ -27,7 +32,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  return isAuthenticated ? <>{children}</> : null;
+  return (isAuthenticated && profile?.role !== 'blocked') ? <>{children}</> : null;
 };
 
 export default ProtectedRoute;

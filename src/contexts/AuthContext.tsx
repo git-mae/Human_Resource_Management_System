@@ -11,15 +11,34 @@ type Profile = {
   role: string;
 };
 
+type UserPermissions = {
+  id: string;
+  can_add_employee: boolean;
+  can_edit_employee: boolean;
+  can_delete_employee: boolean;
+  can_add_job: boolean;
+  can_edit_job: boolean;
+  can_delete_job: boolean;
+  can_add_department: boolean;
+  can_edit_department: boolean;
+  can_delete_department: boolean;
+  can_add_jobhistory: boolean;
+  can_edit_jobhistory: boolean;
+  can_delete_jobhistory: boolean;
+};
+
 type AuthContextType = {
   user: User | null;
   profile: Profile | null;
+  permissions: UserPermissions | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAdmin: boolean;
+  isBlocked: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   signup: (email: string, password: string, name: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  refreshProfile: () => Promise<void>; // Added this method
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,6 +54,7 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [permissions, setPermissions] = useState<UserPermissions | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,6 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }, 0);
         } else {
           setProfile(null);
+          setPermissions(null);
         }
       }
     );
@@ -75,19 +96,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
-      // Fix the type error by explicitly typing the query
-      const { data, error } = await supabase
+      // Fetch profile
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
 
-      if (error) {
-        console.error('Error fetching profile:', error);
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
         return;
       }
 
-      setProfile(data as Profile);
+      setProfile(profileData as Profile);
+
+      // Fetch permissions
+      const { data: permissionsData, error: permissionsError } = await supabase
+        .from('user_permissions')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (permissionsError && permissionsError.code !== 'PGRST116') {
+        console.error('Error fetching permissions:', permissionsError);
+        return;
+      }
+
+      setPermissions(permissionsData as UserPermissions);
     } catch (error) {
       console.error('Error in fetchProfile:', error);
     }
@@ -113,8 +148,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
       
-      toast.success('Login successful');
-      return true;
+      if (data.user) {
+        // Fetch the user profile to check if blocked
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (profileData && profileData.role === 'blocked') {
+          toast.error('Your account has been blocked. Please contact an administrator.');
+          await supabase.auth.signOut();
+          return false;
+        }
+        
+        toast.success('Login successful');
+        return true;
+      }
+      return false;
     } catch (error) {
       console.error('Login error:', error);
       toast.error('An unexpected error occurred during login');
@@ -163,17 +214,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const isAdmin = profile?.role === 'admin';
+  const isBlocked = profile?.role === 'blocked';
+
   return (
     <AuthContext.Provider
       value={{
         user,
         profile,
+        permissions,
         isAuthenticated: !!user,
         isLoading,
+        isAdmin,
+        isBlocked,
         login,
         signup,
         logout,
-        refreshProfile, // Add the refreshProfile function
+        refreshProfile,
       }}
     >
       {children}
