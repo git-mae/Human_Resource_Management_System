@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +22,7 @@ import Jobs from "@/pages/Jobs";
 import Reports from "@/pages/Reports";
 import UserManagement from "@/pages/UserManagement";
 import NotFound from "./pages/NotFound";
+import Settings from "./pages/Settings";
 
 // Create a new instance of QueryClient with better error handling
 const queryClient = new QueryClient({
@@ -61,7 +63,7 @@ const App = () => (
                       <Route path="jobs" element={<Jobs />} />
                       <Route path="reports" element={<Reports />} />
                       <Route path="user-management" element={<UserManagement />} />
-                      <Route path="settings" element={<div className="p-6">Settings page - Coming soon</div>} />
+                      <Route path="settings" element={<Settings />} />
                     </Route>
                     
                     {/* Not found route */}
