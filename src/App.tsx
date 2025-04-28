@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { EmployeeProvider } from "@/contexts/EmployeeContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import DashboardLayout from "@/components/DashboardLayout";
 
@@ -32,40 +34,46 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <EmployeeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Public routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              
-              {/* Protected routes */}
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }>
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="employees" element={<Employees />} />
-                <Route path="departments" element={<Departments />} />
-                <Route path="jobs" element={<Jobs />} />
-                <Route path="reports" element={<Reports />} />
-                <Route path="user-management" element={<UserManagement />} />
-                <Route path="settings" element={<div className="p-6">Settings page - Coming soon</div>} />
-              </Route>
-              
-              {/* Not found route */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </EmployeeProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <CurrencyProvider>
+          <AuthProvider>
+            <EmployeeProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    
+                    {/* Protected routes */}
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <DashboardLayout />
+                      </ProtectedRoute>
+                    }>
+                      <Route path="dashboard" element={<Dashboard />} />
+                      <Route path="employees" element={<Employees />} />
+                      <Route path="departments" element={<Departments />} />
+                      <Route path="jobs" element={<Jobs />} />
+                      <Route path="reports" element={<Reports />} />
+                      <Route path="user-management" element={<UserManagement />} />
+                      <Route path="settings" element={<div className="p-6">Settings page - Coming soon</div>} />
+                    </Route>
+                    
+                    {/* Not found route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              </TooltipProvider>
+            </EmployeeProvider>
+          </AuthProvider>
+        </CurrencyProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
