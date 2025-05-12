@@ -6,8 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ChevronDown, Building, Users } from 'lucide-react';
+import { Building, Users } from 'lucide-react';
 
 type Department = {
   deptcode: string;
@@ -18,6 +17,9 @@ type Employee = {
   empno: string;
   firstname: string | null;
   lastname: string | null;
+  jobcode?: string;
+  jobdesc?: string | null;
+  deptname?: string | null;
 };
 
 const Departments = () => {
@@ -66,7 +68,7 @@ const Departments = () => {
       // First get employee IDs from job history for the selected department
       const { data: jobData, error: jobError } = await supabase
         .from('jobhistory')
-        .select('empno')
+        .select('empno, jobcode')
         .eq('deptcode', selectedDepartment)
         .is('status', null)
         .or('status.eq.active');
@@ -78,13 +80,42 @@ const Departments = () => {
       // Get employee details for these IDs
       const employeeIds = jobData.map(job => job.empno);
       
+      // Get employees
       const { data: employees, error: empError } = await supabase
         .from('employee')
         .select('empno, firstname, lastname')
         .in('empno', employeeIds);
         
       if (empError) throw new Error(empError.message);
-      return employees as Employee[];
+
+      // Get job descriptions
+      const { data: jobs, error: jobsError } = await supabase
+        .from('job')
+        .select('jobcode, jobdesc');
+
+      if (jobsError) throw new Error(jobsError.message);
+
+      // Get department name
+      const { data: deptData, error: deptError } = await supabase
+        .from('department')
+        .select('deptcode, deptname')
+        .eq('deptcode', selectedDepartment)
+        .single();
+
+      if (deptError) console.error('Error fetching department name:', deptError);
+      
+      // Merge employee data with job data
+      return employees.map(emp => {
+        const jobHistory = jobData.find(job => job.empno === emp.empno);
+        const job = jobs.find(j => j.jobcode === jobHistory?.jobcode);
+        
+        return {
+          ...emp,
+          jobcode: jobHistory?.jobcode,
+          jobdesc: job?.jobdesc,
+          deptname: deptData?.deptname
+        };
+      }) as Employee[];
     }
   });
 
@@ -179,6 +210,8 @@ const Departments = () => {
                       <TableRow>
                         <TableHead>Employee ID</TableHead>
                         <TableHead>Name</TableHead>
+                        <TableHead>Job Title</TableHead>
+                        <TableHead>Department</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -188,6 +221,8 @@ const Departments = () => {
                           <TableCell>
                             {emp.firstname || ''} {emp.lastname || ''}
                           </TableCell>
+                          <TableCell>{emp.jobdesc || '-'}</TableCell>
+                          <TableCell>{emp.deptname || '-'}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
