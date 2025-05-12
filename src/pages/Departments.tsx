@@ -19,7 +19,6 @@ type Employee = {
   lastname: string | null;
   jobcode?: string;
   jobdesc?: string | null;
-  deptname?: string | null;
 };
 
 const Departments = () => {
@@ -94,15 +93,6 @@ const Departments = () => {
         .select('jobcode, jobdesc');
 
       if (jobsError) throw new Error(jobsError.message);
-
-      // Get department name
-      const { data: deptData, error: deptError } = await supabase
-        .from('department')
-        .select('deptcode, deptname')
-        .eq('deptcode', selectedDepartment)
-        .single();
-
-      if (deptError) console.error('Error fetching department name:', deptError);
       
       // Merge employee data with job data
       return employees.map(emp => {
@@ -112,8 +102,7 @@ const Departments = () => {
         return {
           ...emp,
           jobcode: jobHistory?.jobcode,
-          jobdesc: job?.jobdesc,
-          deptname: deptData?.deptname
+          jobdesc: job?.jobdesc
         };
       }) as Employee[];
     }
@@ -211,7 +200,6 @@ const Departments = () => {
                         <TableHead>Employee ID</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Job Title</TableHead>
-                        <TableHead>Department</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -222,7 +210,6 @@ const Departments = () => {
                             {emp.firstname || ''} {emp.lastname || ''}
                           </TableCell>
                           <TableCell>{emp.jobdesc || '-'}</TableCell>
-                          <TableCell>{emp.deptname || '-'}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

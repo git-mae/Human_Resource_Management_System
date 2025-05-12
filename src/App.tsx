@@ -18,7 +18,6 @@ import SignUp from "@/pages/SignUp";
 import Dashboard from "@/pages/Dashboard";
 import Employees from "@/pages/Employees";
 import Departments from "@/pages/Departments";
-import Jobs from "@/pages/Jobs";
 import Reports from "@/pages/Reports";
 import UserManagement from "@/pages/UserManagement";
 import NotFound from "./pages/NotFound";
@@ -60,7 +59,6 @@ const App = () => (
                       <Route path="dashboard" element={<Dashboard />} />
                       <Route path="employees" element={<Employees />} />
                       <Route path="departments" element={<Departments />} />
-                      <Route path="jobs" element={<Jobs />} />
                       <Route path="reports" element={<Reports />} />
                       <Route path="user-management" element={<UserManagement />} />
                       <Route path="settings" element={<Settings />} />
