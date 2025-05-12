@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
@@ -83,7 +82,7 @@ const DashboardLayout: React.FC = () => {
             >
               <Menu size={20} />
             </Button>
-            <h1 className="text-xl font-semibold">Pyra HR</h1>
+            <h1 className="text-xl font-semibold">PYRA HR</h1>
           </div>
           
           <div className="ml-auto flex items-center space-x-4">
@@ -110,7 +109,7 @@ const DashboardLayout: React.FC = () => {
           </div>
         </header>
         
-        <main className="flex-1 overflow-auto bg-gray-50 p-4">
+        <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900 p-4">
           <Outlet />
         </main>
       </div>

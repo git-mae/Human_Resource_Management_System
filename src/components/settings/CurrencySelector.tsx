@@ -11,8 +11,12 @@ const currencies = [
 const CurrencySelector = () => {
   const { currency, setCurrency } = useCurrency();
 
+  const handleCurrencyChange = (value: string) => {
+    setCurrency(value as "USD" | "EUR" | "GBP");
+  };
+
   return (
-    <Select value={currency} onValueChange={setCurrency}>
+    <Select value={currency} onValueChange={handleCurrencyChange}>
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select currency" />
       </SelectTrigger>

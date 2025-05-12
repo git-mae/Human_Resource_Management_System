@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import ThemeSelector from "@/components/settings/ThemeSelector";
 import LanguageSelector from "@/components/settings/LanguageSelector";
 import CurrencySelector from "@/components/settings/CurrencySelector";
-import { Globe, Palette, Currency } from "lucide-react";
+import { Globe, Palette, User } from "lucide-react";
 
 const Settings = () => {
   return (
@@ -35,11 +35,21 @@ const Settings = () => {
               </div>
               <LanguageSelector />
             </div>
+          </CardContent>
+        </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle>Account Management</CardTitle>
+            <CardDescription>
+              Manage your account preferences
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <Currency className="h-5 w-5" />
-                <Label>Currency</Label>
+                <User className="h-5 w-5" />
+                <Label>Preferred Currency</Label>
               </div>
               <CurrencySelector />
             </div>
