@@ -73,6 +73,13 @@ const DepartmentTable = ({
             </TableCell>
           </TableRow>
         )}
+        {departments?.length === 0 && (
+          <TableRow>
+            <TableCell colSpan={4} className="text-center py-4">
+              No matching departments found.
+            </TableCell>
+          </TableRow>
+        )}
       </TableBody>
     </Table>
   );

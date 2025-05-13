@@ -4,9 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDepartments, useDepartmentEmployeeCounts, useDepartmentEmployees } from '@/hooks/useDepartments';
 import DepartmentTable from '@/components/departments/DepartmentTable';
 import EmployeeList from '@/components/departments/EmployeeList';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 
 const Departments = () => {
   const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { 
     data: departments, 
@@ -34,6 +37,14 @@ const Departments = () => {
 
   const selectedDepartmentData = departments?.find(d => d.deptcode === selectedDepartment);
 
+  // Filter departments based on search query
+  const filteredDepartments = departments?.filter(dept => {
+    const deptCode = dept.deptcode.toLowerCase();
+    const deptName = dept.deptname?.toLowerCase() || '';
+    const query = searchQuery.toLowerCase();
+    return deptCode.includes(query) || deptName.includes(query);
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -42,11 +53,22 @@ const Departments = () => {
       
       <Card>
         <CardHeader>
-          <CardTitle>Department List</CardTitle>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <CardTitle>Department List</CardTitle>
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search departments..."
+                className="pl-8"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <DepartmentTable 
-            departments={departments}
+            departments={filteredDepartments}
             employeeCounts={employeeCounts}
             selectedDepartment={selectedDepartment}
             isLoading={loadingDepts || loadingCounts}
