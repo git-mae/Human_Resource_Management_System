@@ -1,9 +1,6 @@
-
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
-  Briefcase, 
-  Building2, 
   ChevronLeft,
   FileText, 
   Home, 
@@ -42,16 +39,6 @@ const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed 
       label: 'Employees', 
       icon: <Users size={20} />, 
       href: '/employees' 
-    },
-    { 
-      label: 'Departments', 
-      icon: <Building2 size={20} />, 
-      href: '/departments' 
-    },
-    { 
-      label: 'Jobs', 
-      icon: <Briefcase size={20} />, 
-      href: '/jobs' 
     },
     { 
       label: 'Reports', 
