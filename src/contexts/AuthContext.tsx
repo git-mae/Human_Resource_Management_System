@@ -8,7 +8,7 @@ import { Database } from '@/integrations/supabase/types';
 type Profile = {
   id: string;
   name: string;
-  role: string;
+  role: 'admin' | 'user' | 'blocked';
 };
 
 type UserPermissions = {

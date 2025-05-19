@@ -6,9 +6,10 @@ import { toast } from 'sonner';
 
 type ProtectedRouteProps = {
   children: React.ReactNode;
+  requiredRole?: 'admin' | 'user'; // Add optional role requirement
 };
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole }) => {
   const { isAuthenticated, isLoading, profile } = useAuth();
   const navigate = useNavigate();
 
@@ -20,9 +21,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       } else if (profile?.role === 'blocked') {
         toast.error('Your account has been blocked. Please contact an administrator.');
         navigate('/login');
+      } else if (requiredRole && profile?.role !== requiredRole) {
+        toast.error(`You need ${requiredRole} permissions to access this page`);
+        navigate('/dashboard');
       }
     }
-  }, [isAuthenticated, isLoading, navigate, profile]);
+  }, [isAuthenticated, isLoading, navigate, profile, requiredRole]);
 
   if (isLoading) {
     return (
@@ -32,7 +36,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
-  return (isAuthenticated && profile?.role !== 'blocked') ? <>{children}</> : null;
+  return (isAuthenticated && profile?.role !== 'blocked' && 
+         (!requiredRole || profile?.role === requiredRole)) ? <>{children}</> : null;
 };
 
 export default ProtectedRoute;

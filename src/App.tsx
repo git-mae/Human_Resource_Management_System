@@ -58,7 +58,12 @@ const App = () => (
                       <Route path="dashboard" element={<Dashboard />} />
                       <Route path="employees" element={<Employees />} />
                       <Route path="reports" element={<Reports />} />
-                      <Route path="user-management" element={<UserManagement />} />
+                      {/* Admin-only route */}
+                      <Route path="user-management" element={
+                        <ProtectedRoute requiredRole="admin">
+                          <UserManagement />
+                        </ProtectedRoute>
+                      } />
                       <Route path="settings" element={<Settings />} />
                     </Route>
                     
