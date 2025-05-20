@@ -1,23 +1,19 @@
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext } from "react";
 
-type Currency = "USD" | "EUR" | "GBP";
+type Currency = "USD";
 
 interface CurrencyContextType {
   currency: Currency;
-  setCurrency: (currency: Currency) => void;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrency] = useState<Currency>(() => {
-    const stored = localStorage.getItem("currency");
-    return (stored as Currency) || "USD";
-  });
+  const currency: Currency = "USD";
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency }}>
+    <CurrencyContext.Provider value={{ currency }}>
       {children}
     </CurrencyContext.Provider>
   );

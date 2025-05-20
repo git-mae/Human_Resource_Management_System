@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ThemeSelector from '@/components/settings/ThemeSelector';
 import LanguageSelector from '@/components/settings/LanguageSelector';
-import CurrencySelector from '@/components/settings/CurrencySelector';
 import AccountSettings from '@/components/settings/AccountSettings';
 import ProfileEditDialog from '@/components/ProfileEditDialog';
 
@@ -31,7 +30,6 @@ const Settings = () => {
         <TabsContent value="display" className="space-y-4">
           <ThemeSelector />
           <LanguageSelector />
-          <CurrencySelector />
         </TabsContent>
         
         <TabsContent value="account" className="space-y-4">
