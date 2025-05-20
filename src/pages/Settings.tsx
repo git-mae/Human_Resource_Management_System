@@ -5,8 +5,15 @@ import ThemeSelector from "@/components/settings/ThemeSelector";
 import LanguageSelector from "@/components/settings/LanguageSelector";
 import CurrencySelector from "@/components/settings/CurrencySelector";
 import { Globe, Palette, User } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import ProfileEditDialog from "@/components/ProfileEditDialog";
 
 const Settings = () => {
+  const [profileEditOpen, setProfileEditOpen] = useState(false);
+  const { profile } = useAuth();
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
@@ -53,9 +60,28 @@ const Settings = () => {
               </div>
               <CurrencySelector />
             </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <User className="h-5 w-5" />
+                <Label>Profile Settings</Label>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => setProfileEditOpen(true)}
+              >
+                Edit Profile
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Profile Edit Dialog */}
+      <ProfileEditDialog 
+        open={profileEditOpen} 
+        onOpenChange={setProfileEditOpen} 
+      />
     </div>
   );
 };
