@@ -1,42 +1,81 @@
 
-import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ThemeSelector from '@/components/settings/ThemeSelector';
-import LanguageSelector from '@/components/settings/LanguageSelector';
-import AccountSettings from '@/components/settings/AccountSettings';
-import ProfileEditDialog from '@/components/ProfileEditDialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import AccountSettings from "@/components/settings/AccountSettings";
+import ThemeSelector from "@/components/settings/ThemeSelector";
+import LanguageSelector from "@/components/settings/LanguageSelector";
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 const Settings = () => {
-  const [currentTab, setCurrentTab] = useState('display');
-  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
-
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
-        <p className="text-muted-foreground">
-          Manage your account settings and preferences.
-        </p>
-      </div>
+    <ProtectedRoute>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
+        </div>
 
-      <ProfileEditDialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen} />
-      
-      <Tabs defaultValue={currentTab} onValueChange={setCurrentTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="display">Display</TabsTrigger>
-          <TabsTrigger value="account">Account</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="display" className="space-y-4">
-          <ThemeSelector />
-          <LanguageSelector />
-        </TabsContent>
-        
-        <TabsContent value="account" className="space-y-4">
-          <AccountSettings onOpenProfileEdit={() => setProfileDialogOpen(true)} />
-        </TabsContent>
-      </Tabs>
-    </div>
+        <Tabs defaultValue="account" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="account">Account</TabsTrigger>
+            <TabsTrigger value="appearance">Appearance</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          </TabsList>
+          <TabsContent value="account" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Account</CardTitle>
+                <CardDescription>
+                  Manage your account settings and preferences.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <AccountSettings />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="appearance" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Theme</CardTitle>
+                <CardDescription>
+                  Customize the appearance of the app.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <ThemeSelector />
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Language</CardTitle>
+                <CardDescription>
+                  Choose your preferred language for the interface.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <LanguageSelector />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="notifications" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Notifications</CardTitle>
+                <CardDescription>
+                  Configure how you receive notifications.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>Notification preferences coming soon.</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </ProtectedRoute>
   );
 };
 

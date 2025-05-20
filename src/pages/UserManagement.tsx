@@ -5,10 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus } from 'lucide-react';
+import { UserPlus, Shield } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import UserTable from '@/components/user-management/UserTable';
 import PermissionsDialog from '@/components/user-management/PermissionsDialog';
+import { toast } from 'sonner';
 
 const UserManagement = () => {
   const { isAdmin, profile } = useAuth();
@@ -44,7 +45,11 @@ const UserManagement = () => {
     createEmailFunction();
   }, [isAdmin]);
 
-  if (!isAdmin) {
+  // Special admin check for rochelmaearcellas@gmail.com
+  const isSuperAdmin = profile?.id && profile.name === 'Rochel Mae Arcellas';
+  const accessDenied = !isAdmin && !isSuperAdmin;
+
+  if (accessDenied) {
     return (
       <div className="p-6">
         <h2 className="text-2xl font-bold">Access Denied</h2>
@@ -62,11 +67,25 @@ const UserManagement = () => {
     );
   }
 
+  const handleInviteUser = () => {
+    toast.info("This feature is coming soon!");
+  };
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
-        <p className="text-muted-foreground">Manage user roles and permissions</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
+            <p className="text-muted-foreground">Manage user roles and permissions</p>
+          </div>
+          {isSuperAdmin && (
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <span className="font-medium text-primary">Super Admin Access</span>
+            </div>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -78,7 +97,7 @@ const UserManagement = () => {
                 Manage user accounts and permissions
               </CardDescription>
             </div>
-            <Button variant="default" disabled>
+            <Button variant="default" onClick={handleInviteUser}>
               <UserPlus className="mr-2 h-4 w-4" />
               Invite User
             </Button>
@@ -99,6 +118,7 @@ const UserManagement = () => {
               currentUserId={profile?.id}
               onRoleChange={handleRoleChange}
               onManagePermissions={openPermissionsDialog}
+              isSuperAdmin={isSuperAdmin}
             />
           </Tabs>
         </CardContent>

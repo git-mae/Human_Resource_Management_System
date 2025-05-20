@@ -4,12 +4,17 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { UserData, UserPermission } from '@/types/user-management';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useUserManagement = () => {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
   const [currentTab, setCurrentTab] = useState('all');
   const queryClient = useQueryClient();
+  const { profile } = useAuth();
+
+  // Check if user is super admin
+  const isSuperAdmin = profile?.name === 'Rochel Mae Arcellas';
 
   // Fetch users with profiles, including their email from auth.users
   const { data: users, isLoading, error } = useQuery({
@@ -65,6 +70,20 @@ export const useUserManagement = () => {
   // Update user role
   const updateRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+      // Extra security check for super admin
+      if (!isSuperAdmin) {
+        // Check if the target user is admin
+        const { data: targetUser } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .single();
+          
+        if (targetUser?.role === 'admin') {
+          throw new Error('Only super admin can modify admin roles');
+        }
+      }
+      
       const { error } = await supabase
         .from('profiles')
         .update({ role })
@@ -85,6 +104,20 @@ export const useUserManagement = () => {
   // Update user permissions
   const updatePermissionsMutation = useMutation({
     mutationFn: async ({ userId, permissions }: { userId: string; permissions: Partial<UserPermission> }) => {
+      // Extra security check for super admin
+      if (!isSuperAdmin) {
+        // Check if the target user is admin
+        const { data: targetUser } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', userId)
+          .single();
+          
+        if (targetUser?.role === 'admin') {
+          throw new Error('Only super admin can modify admin permissions');
+        }
+      }
+      
       const { error } = await supabase
         .from('user_permissions')
         .update(permissions)

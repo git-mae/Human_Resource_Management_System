@@ -5,8 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreVertical, ShieldAlert, UserCheck, UserX } from 'lucide-react';
+import { MoreVertical, ShieldAlert, UserCheck, UserX, Mail } from 'lucide-react';
 import { UserData } from '@/types/user-management';
+import { formatDate } from '@/utils/date-formatter';
 
 interface UserTableProps {
   users: UserData[] | undefined;
@@ -14,6 +15,7 @@ interface UserTableProps {
   currentUserId: string | undefined;
   onRoleChange: (userId: string, newRole: string) => void;
   onManagePermissions: (user: UserData) => void;
+  isSuperAdmin?: boolean;
 }
 
 const UserTable: React.FC<UserTableProps> = ({
@@ -21,7 +23,8 @@ const UserTable: React.FC<UserTableProps> = ({
   isLoading,
   currentUserId,
   onRoleChange,
-  onManagePermissions
+  onManagePermissions,
+  isSuperAdmin = false
 }) => {
   return (
     <Table>
@@ -49,7 +52,10 @@ const UserTable: React.FC<UserTableProps> = ({
           users.map(user => (
             <TableRow key={user.id}>
               <TableCell className="font-medium">{user.name || 'Unnamed User'}</TableCell>
-              <TableCell>{user.email}</TableCell>
+              <TableCell className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                {user.email}
+              </TableCell>
               <TableCell>
                 <Badge
                   variant={
@@ -60,10 +66,16 @@ const UserTable: React.FC<UserTableProps> = ({
                   {user.role || 'user'}
                 </Badge>
               </TableCell>
-              <TableCell>{new Date(user.created_at || '').toLocaleDateString()}</TableCell>
+              <TableCell>{formatDate(user.created_at || '')}</TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild disabled={user.id === currentUserId}>
+                  <DropdownMenuTrigger asChild 
+                    disabled={
+                      // Current user can't modify themselves
+                      user.id === currentUserId || 
+                      // Only super admin can modify other admins
+                      (user.role === 'admin' && !isSuperAdmin)
+                    }>
                     <Button variant="ghost" size="icon">
                       <MoreVertical className="h-4 w-4" />
                     </Button>

@@ -13,6 +13,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
   const { isAuthenticated, isLoading, profile } = useAuth();
   const navigate = useNavigate();
 
+  // Check for super admin (rochelmaearcellas@gmail.com)
+  const isSuperAdmin = profile?.name === 'Rochel Mae Arcellas';
+
   useEffect(() => {
     if (!isLoading) {
       if (!isAuthenticated) {
@@ -21,12 +24,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
       } else if (profile?.role === 'blocked') {
         toast.error('Your account has been blocked. Please contact an administrator.');
         navigate('/login');
-      } else if (requiredRole && profile?.role !== requiredRole) {
-        toast.error(`You need ${requiredRole} permissions to access this page`);
+      } else if (requiredRole === 'admin' && profile?.role !== 'admin' && !isSuperAdmin) {
+        toast.error(`You need admin permissions to access this page`);
         navigate('/dashboard');
       }
     }
-  }, [isAuthenticated, isLoading, navigate, profile, requiredRole]);
+  }, [isAuthenticated, isLoading, navigate, profile, requiredRole, isSuperAdmin]);
 
   if (isLoading) {
     return (
@@ -36,8 +39,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, requiredRole 
     );
   }
 
-  return (isAuthenticated && profile?.role !== 'blocked' && 
-         (!requiredRole || profile?.role === requiredRole)) ? <>{children}</> : null;
+  const hasAccess = isAuthenticated && profile?.role !== 'blocked' && 
+    (isSuperAdmin || !requiredRole || profile?.role === requiredRole);
+
+  return hasAccess ? <>{children}</> : null;
 };
 
 export default ProtectedRoute;
