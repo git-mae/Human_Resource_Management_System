@@ -1,87 +1,43 @@
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import ThemeSelector from "@/components/settings/ThemeSelector";
-import LanguageSelector from "@/components/settings/LanguageSelector";
-import CurrencySelector from "@/components/settings/CurrencySelector";
-import { Globe, Palette, User } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import ProfileEditDialog from "@/components/ProfileEditDialog";
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ThemeSelector from '@/components/settings/ThemeSelector';
+import LanguageSelector from '@/components/settings/LanguageSelector';
+import CurrencySelector from '@/components/settings/CurrencySelector';
+import AccountSettings from '@/components/settings/AccountSettings';
+import ProfileEditDialog from '@/components/ProfileEditDialog';
 
 const Settings = () => {
-  const [profileEditOpen, setProfileEditOpen] = useState(false);
-  const { profile } = useAuth();
+  const [currentTab, setCurrentTab] = useState('display');
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold mb-6">Settings</h1>
-      
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>System Customization</CardTitle>
-            <CardDescription>
-              Adjust your application preferences
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Palette className="h-5 w-5" />
-                <Label>Theme</Label>
-              </div>
-              <ThemeSelector />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <Globe className="h-5 w-5" />
-                <Label>Language</Label>
-              </div>
-              <LanguageSelector />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Account Management</CardTitle>
-            <CardDescription>
-              Manage your account preferences
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <User className="h-5 w-5" />
-                <Label>Preferred Currency</Label>
-              </div>
-              <CurrencySelector />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <User className="h-5 w-5" />
-                <Label>Profile Settings</Label>
-              </div>
-              <Button 
-                variant="outline" 
-                onClick={() => setProfileEditOpen(true)}
-              >
-                Edit Profile
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
+        <p className="text-muted-foreground">
+          Manage your account settings and preferences.
+        </p>
       </div>
 
-      {/* Profile Edit Dialog */}
-      <ProfileEditDialog 
-        open={profileEditOpen} 
-        onOpenChange={setProfileEditOpen} 
-      />
+      <ProfileEditDialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen} />
+      
+      <Tabs defaultValue={currentTab} onValueChange={setCurrentTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="display">Display</TabsTrigger>
+          <TabsTrigger value="account">Account</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="display" className="space-y-4">
+          <ThemeSelector />
+          <LanguageSelector />
+          <CurrencySelector />
+        </TabsContent>
+        
+        <TabsContent value="account" className="space-y-4">
+          <AccountSettings onOpenProfileEdit={() => setProfileDialogOpen(true)} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

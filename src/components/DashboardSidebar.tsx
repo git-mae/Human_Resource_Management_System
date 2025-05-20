@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import UserAvatar from '@/components/user/UserAvatar';
 
 type SidebarProps = {
   isCollapsed: boolean;
@@ -22,7 +23,7 @@ type SidebarProps = {
 };
 
 const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
-  const { logout, profile, isAdmin } = useAuth();
+  const { logout, profile, isAdmin, user } = useAuth();
   const navigate = useNavigate();
   
   const handleLogout = async () => {
@@ -109,6 +110,21 @@ const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed 
       </div>
       
       <div className="border-t border-sidebar-border p-4">
+        <div className={cn("flex items-center mb-3", isCollapsed ? "justify-center" : "")}>
+          {!isCollapsed && <div className="mr-3">
+            <UserAvatar user={user} size="sm" />
+          </div>}
+          
+          {!isCollapsed && (
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium truncate">{profile?.name || user?.email?.split('@')[0]}</p>
+              <p className="text-xs text-sidebar-muted truncate">{user?.email}</p>
+            </div>
+          )}
+          
+          {isCollapsed && <UserAvatar user={user} size="sm" />}
+        </div>
+        
         <Button
           variant="ghost"
           size={isCollapsed ? "icon" : "default"}
