@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { ProfileAvatar } from '@/components/ProfileAvatar';
-import { DashboardSidebar } from '@/components/DashboardSidebar';
+import DashboardSidebar from '@/components/DashboardSidebar';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { Menu } from 'lucide-react';
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { siteConfig } from "@/config/site"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { siteConfig } from "@/config/site";
 import { ModeToggle } from './ModeToggle';
 import { NotificationSystem } from './notifications/NotificationSystem';
 
@@ -18,7 +19,6 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { isAuthenticated, user, isLoading, isAdmin, logout } = useAuth();
   const isSmallScreen = useMediaQuery('(max-width: 768px)');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -34,7 +34,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         <div className="flex min-h-screen flex-col">
           <header className="sticky top-0 z-40 border-b bg-background">
             <div className="container flex h-16 items-center justify-between">
-              <Link className="flex items-center gap-2 font-semibold" to="/">
+              <Link className="flex items-center gap-2 font-semibold" to="/" title="Home">
                 <svg
                   width="30"
                   height="30"
@@ -58,7 +58,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                   </>
                 ) : (
                   <Button asChild>
-                    <Link to="/login">Login</Link>
+                    <Link to="/login" title="Login">Login</Link>
                   </Button>
                 )}
               </div>

@@ -36,13 +36,13 @@ const Reports = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold tracking-tight">Employee Job History Report</h2>
           {employeeData && (
-            <Button onClick={handleDownloadPDF} variant="outline" className="flex gap-2">
+            <Button onClick={handleDownloadPDF} variant="outline" className="flex gap-2" title="Download PDF report">
               <Download className="h-4 w-4" /> Download PDF
             </Button>
           )}
         </div>
         
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 dark:bg-slate-900">
           <EmployeeSearchForm 
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}

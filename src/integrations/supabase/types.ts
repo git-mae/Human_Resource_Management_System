@@ -30,6 +30,36 @@ export type Database = {
         }
         Relationships: []
       }
+      deleted_items: {
+        Row: {
+          deleted_at: string | null
+          deleted_by: string | null
+          id: string
+          item_data: Json
+          item_id: string
+          restored: boolean | null
+          table_name: string
+        }
+        Insert: {
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          item_data: Json
+          item_id: string
+          restored?: boolean | null
+          table_name: string
+        }
+        Update: {
+          deleted_at?: string | null
+          deleted_by?: string | null
+          id?: string
+          item_data?: Json
+          item_id?: string
+          restored?: boolean | null
+          table_name?: string
+        }
+        Relationships: []
+      }
       department: {
         Row: {
           deptcode: string
@@ -159,6 +189,36 @@ export type Database = {
             referencedColumns: ["jobcode"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_global: boolean | null
+          is_read: boolean | null
+          message: string
+          recipient_id: string | null
+          type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_global?: boolean | null
+          is_read?: boolean | null
+          message: string
+          recipient_id?: string | null
+          type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_global?: boolean | null
+          is_read?: boolean | null
+          message?: string
+          recipient_id?: string | null
+          type?: string | null
+        }
+        Relationships: []
       }
       payment: {
         Row: {

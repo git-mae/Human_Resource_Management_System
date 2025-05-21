@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
 import { Notification } from '@/types/notifications';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { toast } from 'sonner';
 
 export function NotificationSystem() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -22,20 +23,24 @@ export function NotificationSystem() {
     if (!user) return;
 
     const fetchNotifications = async () => {
-      const { data, error } = await supabase
-        .from('notifications')
-        .select('*')
-        .or(`recipient_id.eq.${user.id},is_global.eq.true`)
-        .order('created_at', { ascending: false })
-        .limit(10);
+      try {
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .or(`recipient_id.eq.${user.id},is_global.eq.true`)
+          .order('created_at', { ascending: false })
+          .limit(10);
 
-      if (error) {
-        console.error('Error fetching notifications:', error);
-        return;
+        if (error) {
+          console.error('Error fetching notifications:', error);
+          return;
+        }
+
+        setNotifications(data as Notification[]);
+        setHasUnread(data.some(n => !n.is_read));
+      } catch (err) {
+        console.error('Error in notifications fetch:', err);
       }
-
-      setNotifications(data as Notification[]);
-      setHasUnread(data.some(n => !n.is_read));
     };
 
     fetchNotifications();
@@ -67,14 +72,19 @@ export function NotificationSystem() {
     if (!user) return;
     
     try {
+      // Mark all notifications as read in the database
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
         .or(`recipient_id.eq.${user.id},is_global.eq.true`)
         .eq('is_read', false);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error marking notifications as read:', error);
+        return;
+      }
       
+      // Update local state
       setNotifications(currentNotifications => 
         currentNotifications.map(n => ({ ...n, is_read: true }))
       );
@@ -99,11 +109,16 @@ export function NotificationSystem() {
         .delete()
         .eq('id', id);
 
-      if (error) throw error;
+      if (error) {
+        toast.error("Failed to delete notification");
+        console.error('Error deleting notification:', error);
+        return;
+      }
 
       setNotifications(currentNotifications => 
         currentNotifications.filter(n => n.id !== id)
       );
+      toast.success("Notification deleted");
     } catch (error) {
       console.error('Error deleting notification:', error);
     }
@@ -112,7 +127,7 @@ export function NotificationSystem() {
   return (
     <Popover onOpenChange={handleOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" title="Notifications">
           <Bell className="h-5 w-5" />
           {hasUnread && (
             <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
@@ -159,13 +174,6 @@ export function NotificationSystem() {
             </div>
           )}
         </ScrollArea>
-        {isAdmin && (
-          <div className="border-t p-3">
-            <Button size="sm" className="w-full" variant="outline">
-              Manage Notifications
-            </Button>
-          </div>
-        )}
       </PopoverContent>
     </Popover>
   );
