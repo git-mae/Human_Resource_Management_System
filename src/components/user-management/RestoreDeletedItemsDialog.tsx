@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -23,10 +22,13 @@ interface DeletedItem {
   restored: boolean;
 }
 
+// Define valid table names to use with Supabase
+type ValidTableName = 'employee' | 'job' | 'department' | 'jobhistory';
+
 const RestoreDeletedItemsDialog = ({ open, onOpenChange }: RestoreDeletedItemsDialogProps) => {
   const [deletedItems, setDeletedItems] = useState<DeletedItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentTab, setCurrentTab] = useState('employee');
+  const [currentTab, setCurrentTab] = useState<ValidTableName>('employee');
   
   useEffect(() => {
     if (open) {
@@ -37,6 +39,7 @@ const RestoreDeletedItemsDialog = ({ open, onOpenChange }: RestoreDeletedItemsDi
   const fetchDeletedItems = async () => {
     setIsLoading(true);
     try {
+      // Now using currentTab directly as it's typed as a valid table name
       const { data, error } = await supabase
         .from('deleted_items')
         .select('*')
@@ -56,9 +59,17 @@ const RestoreDeletedItemsDialog = ({ open, onOpenChange }: RestoreDeletedItemsDi
 
   const handleRestore = async (item: DeletedItem) => {
     try {
+      // Validate that item.table_name is a valid table name
+      if (!['employee', 'job', 'department', 'jobhistory'].includes(item.table_name)) {
+        throw new Error(`Invalid table name: ${item.table_name}`);
+      }
+      
+      // Use type assertion to tell TypeScript this is a valid table name
+      const tableName = item.table_name as ValidTableName;
+      
       // Insert the item back into its original table
       const { error: insertError } = await supabase
-        .from(item.table_name)
+        .from(tableName)
         .insert(item.item_data);
         
       if (insertError) throw insertError;
@@ -101,7 +112,7 @@ const RestoreDeletedItemsDialog = ({ open, onOpenChange }: RestoreDeletedItemsDi
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue={currentTab} onValueChange={setCurrentTab}>
+        <Tabs defaultValue={currentTab} onValueChange={(value) => setCurrentTab(value as ValidTableName)}>
           <TabsList className="mb-4">
             <TabsTrigger value="employee">Employees</TabsTrigger>
             <TabsTrigger value="job">Jobs</TabsTrigger>
@@ -111,6 +122,7 @@ const RestoreDeletedItemsDialog = ({ open, onOpenChange }: RestoreDeletedItemsDi
           
           <ScrollArea className="h-[400px] rounded-md border p-4">
             {isLoading ? (
+              // ... keep existing code (loading skeleton)
               Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex justify-between items-center p-3 border-b">
                   <div>

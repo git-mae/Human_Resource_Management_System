@@ -26,10 +26,11 @@ import {
 type SidebarProps = {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
+  isAdmin?: boolean; // Added isAdmin prop
 };
 
-const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed }) => {
-  const { logout, profile, isAdmin, user } = useAuth();
+const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isAdmin }) => {
+  const { logout, profile, user } = useAuth();
   const navigate = useNavigate();
   
   const handleLogout = async () => {

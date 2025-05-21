@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const { isAuthenticated, user, isLoading, isAdmin, logout } = useAuth();
   const isSmallScreen = useMediaQuery('(max-width: 768px)');
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -68,7 +69,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             {isAuthenticated ? (
               <>
                 <aside className="fixed top-20 z-30 -ml-2 hidden h-[calc(100vh-80px)] w-full shrink-0 overflow-y-auto border-r md:sticky md:block">
-                  <DashboardSidebar isAdmin={isAdmin} />
+                  <DashboardSidebar 
+                    isAdmin={isAdmin} 
+                    isCollapsed={isCollapsed}
+                    setIsCollapsed={setIsCollapsed}
+                  />
                 </aside>
                 <main className="flex w-full flex-1 flex-col overflow-hidden">
                   {children}
