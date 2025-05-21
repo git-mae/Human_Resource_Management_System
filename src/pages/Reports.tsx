@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowRight, FileText, FilePdf, Download } from 'lucide-react';
+import { ArrowRight, FileText, FileType, Download } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useEmployeeSearch } from '@/hooks/useEmployeeSearch';
 import { generatePDF } from '@/utils/pdf-generator';
@@ -70,7 +70,7 @@ const Reports = () => {
             <CardContent className="flex justify-end">
               <Link to="/job-history">
                 <Button className="flex gap-2">
-                  <FilePdf className="h-4 w-4" />
+                  <FileType className="h-4 w-4" />
                   View Report <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
