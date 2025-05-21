@@ -1,12 +1,16 @@
 
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import AccountSettings from "@/components/settings/AccountSettings";
 import ThemeSelector from "@/components/settings/ThemeSelector";
 import LanguageSelector from "@/components/settings/LanguageSelector";
 import ProtectedRoute from '@/components/ProtectedRoute';
+import ProfileEditDialog from '@/components/ProfileEditDialog';
 
 const Settings = () => {
+  const [profileEditOpen, setProfileEditOpen] = useState(false);
+  
   return (
     <ProtectedRoute>
       <div className="space-y-6">
@@ -29,7 +33,7 @@ const Settings = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <AccountSettings />
+                <AccountSettings onOpenProfileEdit={() => setProfileEditOpen(true)} />
               </CardContent>
             </Card>
           </TabsContent>
@@ -74,6 +78,12 @@ const Settings = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Profile edit dialog */}
+        <ProfileEditDialog 
+          open={profileEditOpen} 
+          onOpenChange={setProfileEditOpen} 
+        />
       </div>
     </ProtectedRoute>
   );

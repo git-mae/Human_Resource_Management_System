@@ -43,7 +43,7 @@ export const generatePDF = (employee: EmployeeWithJobs) => {
   
   // Add footer with datetime
   const date = new Date().toLocaleString();
-  const pageCount = doc.internal.getNumberOfPages();
+  const pageCount = doc.internal.pages.length - 1;
   doc.setFontSize(8);
   for(let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
