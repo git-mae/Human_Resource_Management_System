@@ -48,7 +48,8 @@ export const generatePDF = (employee: EmployeeWithJobs) => {
   
   // Add footer with datetime
   const date = new Date().toLocaleString();
-  const pageCount = doc.internal.getNumberOfPages();
+  // Fix: Use the correct method to get the number of pages
+  const pageCount = doc.getNumberOfPages();
   doc.setFontSize(8);
   
   for(let i = 1; i <= pageCount; i++) {
