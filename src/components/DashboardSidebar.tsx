@@ -16,6 +16,12 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import UserAvatar from '@/components/user/UserAvatar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type SidebarProps = {
   isCollapsed: boolean;
@@ -74,37 +80,54 @@ const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed 
           {isCollapsed && <Home size={24} className="text-sidebar-primary" />}
         </div>
         
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn("text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-            isCollapsed && "hidden"
-          )}
-          onClick={() => setIsCollapsed(true)}
-        >
-          <ChevronLeft size={18} />
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  isCollapsed && "hidden"
+                )}
+                onClick={() => setIsCollapsed(true)}
+              >
+                <ChevronLeft size={18} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Collapse sidebar
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       
       <div className="flex-1 overflow-auto py-4">
         <nav className="flex flex-col gap-1 px-2">
           {navItems.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                  isActive 
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground" 
-                    : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                  isCollapsed && "justify-center px-0"
-                )
-              }
-            >
-              {item.icon}
-              {!isCollapsed && <span className="ml-3">{item.label}</span>}
-            </NavLink>
+            <TooltipProvider key={item.href}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <NavLink
+                    to={item.href}
+                    className={({ isActive }) =>
+                      cn(
+                        "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        isActive 
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground" 
+                          : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                        isCollapsed && "justify-center px-0"
+                      )
+                    }
+                  >
+                    {item.icon}
+                    {!isCollapsed && <span className="ml-3">{item.label}</span>}
+                  </NavLink>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ))}
         </nav>
       </div>
@@ -125,15 +148,24 @@ const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed 
           {isCollapsed && <UserAvatar user={user} size="sm" />}
         </div>
         
-        <Button
-          variant="ghost"
-          size={isCollapsed ? "icon" : "default"}
-          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          onClick={handleLogout}
-        >
-          <LogOut size={20} />
-          {!isCollapsed && <span className="ml-2">Logout</span>}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size={isCollapsed ? "icon" : "default"}
+                className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                onClick={handleLogout}
+              >
+                <LogOut size={20} />
+                {!isCollapsed && <span className="ml-2">Logout</span>}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              Logout
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowRight, FileText, FileType, Download } from 'lucide-react';
+import { ArrowRight, FileText, Download } from 'lucide-react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useEmployeeSearch } from '@/hooks/useEmployeeSearch';
 import { generatePDF } from '@/utils/pdf-generator';
@@ -42,7 +42,7 @@ const Reports = () => {
           )}
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <Card>
             <CardHeader>
               <CardTitle>Employee Job History Report</CardTitle>
@@ -54,23 +54,6 @@ const Reports = () => {
               <Link to="/reports/job-history">
                 <Button className="flex gap-2">
                   <FileText className="h-4 w-4" />
-                  View Report <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Job History Overview</CardTitle>
-              <CardDescription>
-                View all job history records
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex justify-end">
-              <Link to="/job-history">
-                <Button className="flex gap-2">
-                  <FileType className="h-4 w-4" />
                   View Report <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>

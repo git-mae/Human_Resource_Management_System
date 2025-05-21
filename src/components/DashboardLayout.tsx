@@ -1,12 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import DashboardSidebar from './DashboardSidebar';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Menu } from 'lucide-react';
+import { Bell, Menu } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import ProfileEditDialog from './ProfileEditDialog';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
 
 const DashboardLayout: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -66,26 +73,63 @@ const DashboardLayout: React.FC = () => {
       <div className="flex flex-1 flex-col overflow-hidden">
         <header className="flex h-16 items-center border-b bg-background px-4 shadow-sm">
           <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="mr-2 lg:hidden"
-              onClick={() => setIsMobileSidebarOpen(true)}
-            >
-              <Menu size={20} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="mr-2 hidden lg:flex"
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            >
-              <Menu size={20} />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="mr-2 lg:hidden"
+                    onClick={() => setIsMobileSidebarOpen(true)}
+                  >
+                    <Menu size={20} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Open Sidebar
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="mr-2 hidden lg:flex"
+                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                  >
+                    <Menu size={20} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Toggle Sidebar
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
             <h1 className="text-xl font-semibold">PYRA HR</h1>
           </div>
           
           <div className="ml-auto flex items-center space-x-4">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="mr-2"
+                  >
+                    <Bell size={18} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Notifications
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+
             <div 
               className="text-sm cursor-pointer hover:underline"
               onClick={() => setProfileDialogOpen(true)}
@@ -94,18 +138,28 @@ const DashboardLayout: React.FC = () => {
                 Welcome, {profile?.name || user?.email?.split('@')[0] || 'User'}
               </span>
             </div>
-            <div 
-              className="cursor-pointer"
-              onClick={() => setProfileDialogOpen(true)}
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={avatarUrl || ""} />
-                <AvatarFallback className="bg-brand-600 text-white">
-                  {profile?.name?.charAt(0).toUpperCase() || 
-                   user?.email?.charAt(0).toUpperCase() || "U"}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div 
+                    className="cursor-pointer"
+                    onClick={() => setProfileDialogOpen(true)}
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={avatarUrl || ""} />
+                      <AvatarFallback className="bg-brand-600 text-white">
+                        {profile?.name?.charAt(0).toUpperCase() || 
+                         user?.email?.charAt(0).toUpperCase() || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Edit Profile
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </header>
         

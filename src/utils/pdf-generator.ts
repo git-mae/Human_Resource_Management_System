@@ -20,8 +20,13 @@ export const generatePDF = (employee: EmployeeWithJobs) => {
   doc.text(`Hire Date: ${formatDate(employee.hiredate)}`, 14, 44);
   doc.text(`Status: ${employee.sepdate ? `Separated: ${formatDate(employee.sepdate)}` : 'Active'}`, 14, 50);
   
+  // Sort job history data by effective date (newest first)
+  const sortedJobHistory = [...employee.jobHistory].sort((a, b) => {
+    return new Date(b.effdate).getTime() - new Date(a.effdate).getTime();
+  });
+  
   // Format job history data for table
-  const tableData = employee.jobHistory.map(job => [
+  const tableData = sortedJobHistory.map(job => [
     formatDate(job.effdate),
     job.jobdesc || job.jobcode,
     job.deptname || job.deptcode || 'N/A',
@@ -43,8 +48,9 @@ export const generatePDF = (employee: EmployeeWithJobs) => {
   
   // Add footer with datetime
   const date = new Date().toLocaleString();
-  const pageCount = doc.internal.pages.length - 1;
+  const pageCount = doc.internal.getNumberOfPages();
   doc.setFontSize(8);
+  
   for(let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.text(`Generated on: ${date} | Page ${i} of ${pageCount}`, 14, doc.internal.pageSize.height - 10);

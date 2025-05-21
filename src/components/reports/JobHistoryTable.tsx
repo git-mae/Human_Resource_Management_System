@@ -26,6 +26,11 @@ const formatDate = (dateString: string | null) => {
 };
 
 export const JobHistoryTable = ({ jobHistory, employeeName }: JobHistoryTableProps) => {
+  const sortedJobHistory = [...jobHistory].sort((a, b) => {
+    // Sort by effective date in descending order (newest first)
+    return new Date(b.effdate).getTime() - new Date(a.effdate).getTime();
+  });
+  
   return (
     <Table>
       <TableCaption>Job history for {employeeName}</TableCaption>
@@ -38,14 +43,14 @@ export const JobHistoryTable = ({ jobHistory, employeeName }: JobHistoryTablePro
         </TableRow>
       </TableHeader>
       <TableBody>
-        {jobHistory.length === 0 ? (
+        {sortedJobHistory.length === 0 ? (
           <TableRow>
             <TableCell colSpan={4} className="text-center">
               No job history records found
             </TableCell>
           </TableRow>
         ) : (
-          jobHistory.map((job, index) => (
+          sortedJobHistory.map((job, index) => (
             <TableRow key={`${job.empno}-${job.jobcode}-${job.effdate}-${index}`}>
               <TableCell>{formatDate(job.effdate)}</TableCell>
               <TableCell>{job.jobdesc || job.jobcode}</TableCell>

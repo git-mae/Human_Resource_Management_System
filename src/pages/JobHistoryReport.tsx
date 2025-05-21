@@ -10,6 +10,7 @@ import { useEmployeeSearch } from '@/hooks/useEmployeeSearch';
 import { generatePDF } from '@/utils/pdf-generator';
 import { usePermissions } from '@/services/UserPermissionsService';
 import ProtectedRoute from '@/components/ProtectedRoute';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { formatDate } from '@/utils/date-formatter';
 
 const JobHistoryReport = () => {
@@ -41,9 +42,16 @@ const JobHistoryReport = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold tracking-tight">Employee Job History Report</h2>
           {employeeData && (
-            <Button onClick={handleDownloadPDF} variant="outline" className="flex gap-2">
-              <Download className="h-4 w-4" /> Download PDF
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={handleDownloadPDF} variant="outline" className="flex gap-2">
+                    <Download className="h-4 w-4" /> Download PDF
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Download Job History as PDF</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
         
