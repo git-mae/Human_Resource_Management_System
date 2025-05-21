@@ -1,8 +1,6 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import AccountSettings from "@/components/settings/AccountSettings";
 import ThemeSelector from "@/components/settings/ThemeSelector";
 import LanguageSelector from "@/components/settings/LanguageSelector";
 import ProtectedRoute from '@/components/ProtectedRoute';
@@ -18,25 +16,11 @@ const Settings = () => {
           <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
         </div>
 
-        <Tabs defaultValue="account" className="space-y-4">
+        <Tabs defaultValue="appearance" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="appearance">Appearance</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
-          <TabsContent value="account" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Account</CardTitle>
-                <CardDescription>
-                  Manage your account settings and preferences.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <AccountSettings onOpenProfileEdit={() => setProfileEditOpen(true)} />
-              </CardContent>
-            </Card>
-          </TabsContent>
           
           <TabsContent value="appearance" className="space-y-4">
             <Card>
@@ -79,7 +63,7 @@ const Settings = () => {
           </TabsContent>
         </Tabs>
         
-        {/* Profile edit dialog */}
+        {/* Profile edit dialog - keep for functionality */}
         <ProfileEditDialog 
           open={profileEditOpen} 
           onOpenChange={setProfileEditOpen} 
