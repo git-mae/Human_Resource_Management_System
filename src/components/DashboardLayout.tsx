@@ -86,25 +86,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           <footer className="border-t py-4 md:px-8 md:py-6">
             <div className="container flex flex-col items-center justify-between gap-4 md:flex-row">
               <p className="text-sm text-muted-foreground">
-                Built by{' '}
-                <a
-                  href="https://twitter.com/sadmann7"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium underline underline-offset-4"
-                >
-                  Sadman Sakib
-                </a>
-                . The source code is available on{' '}
-                <a
-                  href="https://github.com/sadmann7/skateshop"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium underline underline-offset-4"
-                >
-                  GitHub
-                </a>
-                .
+                © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
               </p>
               <ModeToggle />
             </div>
