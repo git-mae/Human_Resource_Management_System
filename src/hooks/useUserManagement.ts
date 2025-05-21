@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export const useUserManagement = () => {
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
   const [permissionDialogOpen, setPermissionDialogOpen] = useState(false);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [currentTab, setCurrentTab] = useState('all');
   const queryClient = useQueryClient();
   const { profile } = useAuth();
@@ -90,6 +91,16 @@ export const useUserManagement = () => {
         .eq('id', userId);
         
       if (error) throw error;
+      
+      // Create notification for role change
+      await supabase.from('notifications').insert({
+        recipient_id: userId,
+        message: `Your account role has been updated to ${role}`,
+        type: role === 'blocked' ? 'warning' : 'info',
+        is_global: false,
+        is_read: false
+      });
+      
       return { userId, role };
     },
     onSuccess: (data) => {
@@ -124,6 +135,16 @@ export const useUserManagement = () => {
         .eq('user_id', userId);
         
       if (error) throw error;
+      
+      // Create notification for permission change
+      await supabase.from('notifications').insert({
+        recipient_id: userId,
+        message: `Your permissions have been updated by an administrator`,
+        type: 'info',
+        is_global: false,
+        is_read: false
+      });
+      
       return { userId, permissions };
     },
     onSuccess: () => {
@@ -146,6 +167,11 @@ export const useUserManagement = () => {
     setSelectedUser(user);
     setPermissionDialogOpen(true);
   };
+  
+  // Handle restore dialog
+  const openRestoreDialog = () => {
+    setRestoreDialogOpen(true);
+  };
 
   // Handle permissions change
   const handlePermissionChange = (field: keyof UserPermission, value: boolean) => {
@@ -164,12 +190,15 @@ export const useUserManagement = () => {
     error,
     selectedUser,
     permissionDialogOpen,
+    restoreDialogOpen,
     currentTab,
     setSelectedUser,
     setPermissionDialogOpen,
+    setRestoreDialogOpen,
     setCurrentTab,
     handleRoleChange,
     openPermissionsDialog,
+    openRestoreDialog,
     handlePermissionChange
   };
 };

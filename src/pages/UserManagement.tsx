@@ -5,11 +5,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserPlus, Shield } from 'lucide-react';
+import { UserPlus, Shield, Trash2, History } from 'lucide-react';
 import { useUserManagement } from '@/hooks/useUserManagement';
 import UserTable from '@/components/user-management/UserTable';
 import PermissionsDialog from '@/components/user-management/PermissionsDialog';
 import { toast } from 'sonner';
+import RestoreDeletedItemsDialog from '@/components/user-management/RestoreDeletedItemsDialog';
 
 const UserManagement = () => {
   const { isAdmin, profile } = useAuth();
@@ -19,12 +20,15 @@ const UserManagement = () => {
     error,
     selectedUser,
     permissionDialogOpen,
+    restoreDialogOpen,
     currentTab,
     setPermissionDialogOpen,
+    setRestoreDialogOpen,
     setCurrentTab,
     handleRoleChange,
     openPermissionsDialog,
-    handlePermissionChange
+    handlePermissionChange,
+    openRestoreDialog,
   } = useUserManagement();
 
   // Create edge function for fetching emails
@@ -97,10 +101,16 @@ const UserManagement = () => {
                 Manage user accounts and permissions
               </CardDescription>
             </div>
-            <Button variant="default" onClick={handleInviteUser}>
-              <UserPlus className="mr-2 h-4 w-4" />
-              Invite User
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={openRestoreDialog}>
+                <History className="mr-2 h-4 w-4" />
+                Restore Deleted Items
+              </Button>
+              <Button variant="default" onClick={handleInviteUser}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Invite User
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -130,6 +140,12 @@ const UserManagement = () => {
         open={permissionDialogOpen}
         onOpenChange={setPermissionDialogOpen}
         onPermissionChange={handlePermissionChange}
+      />
+
+      {/* Restore Deleted Items Dialog */}
+      <RestoreDeletedItemsDialog
+        open={restoreDialogOpen}
+        onOpenChange={setRestoreDialogOpen}
       />
     </div>
   );
