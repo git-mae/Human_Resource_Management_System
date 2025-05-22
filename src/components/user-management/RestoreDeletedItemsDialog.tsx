@@ -1,172 +1,257 @@
+
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import { formatDate } from '@/utils/date-formatter';
+import { toast } from 'sonner';
+import { RotateCcw } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface RestoreDeletedItemsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+// Define valid table names type
+type ValidTableName = 'department' | 'employee' | 'job' | 'jobhistory';
+
 interface DeletedItem {
   id: string;
-  table_name: string;
-  deleted_at: string;
+  table_name: ValidTableName;
   item_id: string;
-  item_data: any;
+  item_data: Record<string, any>;
+  deleted_at: string;
+  deleted_by: string;
   restored: boolean;
 }
 
-// Define valid table names to use with Supabase
-type ValidTableName = 'employee' | 'job' | 'department' | 'jobhistory';
-
 const RestoreDeletedItemsDialog = ({ open, onOpenChange }: RestoreDeletedItemsDialogProps) => {
-  const [deletedItems, setDeletedItems] = useState<DeletedItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentTab, setCurrentTab] = useState<ValidTableName>('employee');
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState<DeletedItem[]>([]);
+  const [selectedItems, setSelectedItems] = useState<Record<string, boolean>>({});
+  const { isAdmin } = useAuth();
   
   useEffect(() => {
-    if (open) {
-      fetchDeletedItems();
+    if (open && isAdmin) {
+      loadDeletedItems();
     }
-  }, [open, currentTab]);
+  }, [open, isAdmin]);
 
-  const fetchDeletedItems = async () => {
-    setIsLoading(true);
+  const loadDeletedItems = async () => {
+    setLoading(true);
     try {
-      // Now using currentTab directly as it's typed as a valid table name
       const { data, error } = await supabase
         .from('deleted_items')
         .select('*')
-        .eq('table_name', currentTab)
+        .eq('restored', false)
         .order('deleted_at', { ascending: false });
-        
+
       if (error) throw error;
-      
-      setDeletedItems(data || []);
+      setItems(data as DeletedItem[]);
     } catch (error) {
-      console.error('Error fetching deleted items:', error);
+      console.error('Error loading deleted items:', error);
       toast.error('Failed to load deleted items');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleRestore = async (item: DeletedItem) => {
+  const handleRestore = async () => {
+    const itemsToRestore = Object.entries(selectedItems)
+      .filter(([, selected]) => selected)
+      .map(([id]) => id);
+    
+    if (itemsToRestore.length === 0) {
+      toast.warning('No items selected for restoration');
+      return;
+    }
+    
+    setLoading(true);
+    
     try {
-      // Validate that item.table_name is a valid table name
-      if (!['employee', 'job', 'department', 'jobhistory'].includes(item.table_name)) {
-        throw new Error(`Invalid table name: ${item.table_name}`);
+      // Process each selected item for restoration
+      for (const itemId of itemsToRestore) {
+        const item = items.find(i => i.id === itemId);
+        if (!item) continue;
+        
+        // Insert the item data back into its original table
+        const { error: insertError } = await supabase
+          .from(item.table_name as ValidTableName)
+          .insert(item.item_data);
+        
+        if (insertError) {
+          console.error(`Error restoring item to ${item.table_name}:`, insertError);
+          toast.error(`Failed to restore item from ${item.table_name}: ${insertError.message}`);
+          continue;
+        }
+        
+        // Mark the item as restored
+        const { error: updateError } = await supabase
+          .from('deleted_items')
+          .update({ restored: true })
+          .eq('id', item.id);
+          
+        if (updateError) {
+          console.error('Error updating restoration status:', updateError);
+        }
+        
+        // Create notification
+        await supabase.from('notifications').insert({
+          message: `${item.table_name} record (${item.item_id}) has been restored`,
+          type: 'success',
+          is_global: true,
+          is_read: false
+        });
       }
       
-      // Use type assertion to tell TypeScript this is a valid table name
-      const tableName = item.table_name as ValidTableName;
-      
-      // Insert the item back into its original table
-      const { error: insertError } = await supabase
-        .from(tableName)
-        .insert(item.item_data);
-        
-      if (insertError) throw insertError;
-      
-      // Update the deleted_items record to mark as restored
-      const { error: updateError } = await supabase
-        .from('deleted_items')
-        .update({ restored: true })
-        .eq('id', item.id);
-        
-      if (updateError) throw updateError;
-      
-      // Create notification about restoration
-      await supabase.from('notifications').insert({
-        message: `A ${item.table_name} record has been restored by an administrator`,
-        type: 'info',
-        is_global: true,
-        is_read: false
-      });
-      
-      toast.success(`Item restored successfully`);
-      
-      // Update local state
-      setDeletedItems(items => 
-        items.map(i => i.id === item.id ? { ...i, restored: true } : i)
-      );
+      toast.success('Selected items restored successfully');
+      loadDeletedItems(); // Reload list after restoration
+      setSelectedItems({});
     } catch (error) {
-      console.error('Error restoring item:', error);
-      toast.error('Failed to restore item');
+      console.error('Error in restoration process:', error);
+      toast.error('An error occurred during restoration');
+    } finally {
+      setLoading(false);
     }
   };
-
+  
+  const handleSelectAll = (select: boolean) => {
+    const newSelection = { ...selectedItems };
+    items.forEach(item => {
+      newSelection[item.id] = select;
+    });
+    setSelectedItems(newSelection);
+  };
+  
+  const toggleItemSelection = (itemId: string) => {
+    setSelectedItems({
+      ...selectedItems,
+      [itemId]: !selectedItems[itemId]
+    });
+  };
+  
+  const getSelectedCount = () => {
+    return Object.values(selectedItems).filter(Boolean).length;
+  };
+  
+  const formatTableName = (tableName: string) => {
+    return tableName.charAt(0).toUpperCase() + tableName.slice(1);
+  };
+  
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Restore Deleted Items</DialogTitle>
           <DialogDescription>
-            View and restore items that have been deleted from the system
+            Select items to restore from the deleted items history. Only items that have not been restored are shown.
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue={currentTab} onValueChange={(value) => setCurrentTab(value as ValidTableName)}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="employee">Employees</TabsTrigger>
-            <TabsTrigger value="job">Jobs</TabsTrigger>
-            <TabsTrigger value="department">Departments</TabsTrigger>
-            <TabsTrigger value="jobhistory">Job History</TabsTrigger>
-          </TabsList>
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSelectAll(true)}
+              disabled={items.length === 0}
+            >
+              Select All
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleSelectAll(false)}
+              disabled={getSelectedCount() === 0}
+            >
+              Deselect All
+            </Button>
+          </div>
           
-          <ScrollArea className="h-[400px] rounded-md border p-4">
-            {isLoading ? (
-              // ... keep existing code (loading skeleton)
-              Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex justify-between items-center p-3 border-b">
-                  <div>
-                    <Skeleton className="h-4 w-40 mb-2" />
-                    <Skeleton className="h-3 w-24" />
-                  </div>
-                  <Skeleton className="h-8 w-20" />
-                </div>
-              ))
-            ) : deletedItems.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No deleted {currentTab} records found
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {deletedItems.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center p-3 border rounded-md">
-                    <div>
-                      <h4 className="font-semibold">
-                        {currentTab === 'employee' && item.item_data.firstname && item.item_data.lastname ? 
-                          `${item.item_data.firstname} ${item.item_data.lastname}` : 
-                          currentTab === 'job' && item.item_data.jobdesc ? 
-                          item.item_data.jobdesc : 
-                          currentTab === 'department' && item.item_data.deptname ? 
-                          item.item_data.deptname : 
-                          `${currentTab} #${item.item_id}`}
-                      </h4>
-                      <p className="text-sm text-muted-foreground">
-                        Deleted: {formatDate(item.deleted_at)}
-                      </p>
-                    </div>
-                    <Button
-                      onClick={() => handleRestore(item)}
-                      disabled={item.restored}
-                      variant={item.restored ? "outline" : "default"}
-                    >
-                      {item.restored ? "Restored" : "Restore"}
-                    </Button>
-                  </div>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleRestore}
+            disabled={getSelectedCount() === 0 || loading}
+            className="flex items-center gap-1"
+          >
+            <RotateCcw className="h-4 w-4" /> 
+            Restore Selected ({getSelectedCount()})
+          </Button>
+        </div>
+        
+        <ScrollArea className="h-[400px]">
+          {loading ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="text-center p-4">
+              No deleted items found
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40px]"></TableHead>
+                  <TableHead>Table</TableHead>
+                  <TableHead>Item ID</TableHead>
+                  <TableHead>Deleted At</TableHead>
+                  <TableHead>Details</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {items.map((item) => (
+                  <TableRow key={item.id}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedItems[item.id] || false}
+                        onCheckedChange={() => toggleItemSelection(item.id)}
+                      />
+                    </TableCell>
+                    <TableCell>{formatTableName(item.table_name)}</TableCell>
+                    <TableCell>{item.item_id}</TableCell>
+                    <TableCell>{formatDate(item.deleted_at)}</TableCell>
+                    <TableCell>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          // Show details in a toast for now
+                          // Could improve this with a more detailed view
+                          const details = Object.entries(item.item_data)
+                            .map(([key, value]) => `${key}: ${value}`)
+                            .join('\n');
+                          toast.info(
+                            <pre className="max-h-[300px] overflow-auto whitespace-pre-wrap text-xs">
+                              {details}
+                            </pre>,
+                            {
+                              duration: 10000,
+                              position: 'bottom-center',
+                            }
+                          );
+                        }}
+                      >
+                        View Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </div>
-            )}
-          </ScrollArea>
-        </Tabs>
+              </TableBody>
+            </Table>
+          )}
+        </ScrollArea>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

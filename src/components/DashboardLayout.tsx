@@ -51,12 +51,10 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 {siteConfig.name}
               </Link>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                {isAuthenticated && <NotificationSystem />}
                 {isAuthenticated ? (
-                  <>
-                    <NotificationSystem />
-                    <ProfileAvatar user={user} onLogout={handleLogout} />
-                  </>
+                  <ProfileAvatar user={user} onLogout={handleLogout} />
                 ) : (
                   <Button asChild>
                     <Link to="/login" title="Login">Login</Link>

@@ -1,6 +1,6 @@
 
 export const siteConfig = {
-  name: "HR System",
+  name: "Pyra HR",
   description: "Modern HR Management System for Employee Management",
   links: {
     github: "https://github.com/sadmann7",

@@ -59,6 +59,10 @@ export function NotificationSystem() {
         (payload) => {
           setNotifications(prev => [payload.new as Notification, ...prev.slice(0, 9)]);
           setHasUnread(true);
+          // Show toast for new notification
+          toast.info(payload.new.message, {
+            position: 'top-right'
+          });
         }
       )
       .subscribe();
@@ -124,6 +128,29 @@ export function NotificationSystem() {
     }
   };
 
+  const addNotification = async (message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info', isGlobal: boolean = false) => {
+    if (!user || !isAdmin) return;
+
+    try {
+      const { error } = await supabase.from('notifications').insert({
+        message,
+        type,
+        is_global: isGlobal,
+        recipient_id: isGlobal ? null : user.id,
+        is_read: false
+      });
+
+      if (error) {
+        toast.error("Failed to add notification");
+        console.error('Error adding notification:', error);
+      } else {
+        toast.success("Notification added successfully");
+      }
+    } catch (error) {
+      console.error('Error adding notification:', error);
+    }
+  };
+
   return (
     <Popover onOpenChange={handleOpen}>
       <PopoverTrigger asChild>
@@ -138,11 +165,26 @@ export function NotificationSystem() {
       <PopoverContent className="w-80 p-0" align="end">
         <div className="flex items-center justify-between border-b p-3">
           <h3 className="font-medium">Notifications</h3>
-          {isAdmin && (
+          <div className="flex gap-2">
+            {isAdmin && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  const message = prompt('Enter notification message:');
+                  if (message) {
+                    const isGlobal = confirm('Make this a global notification?');
+                    addNotification(message, 'info', isGlobal);
+                  }
+                }}
+              >
+                Add
+              </Button>
+            )}
             <Button variant="ghost" size="sm" onClick={markAllAsRead}>
-              Mark all as read
+              Mark all read
             </Button>
-          )}
+          </div>
         </div>
         <ScrollArea className="h-80">
           {notifications.length > 0 ? (

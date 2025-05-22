@@ -26,7 +26,7 @@ import {
 type SidebarProps = {
   isCollapsed: boolean;
   setIsCollapsed: (value: boolean) => void;
-  isAdmin?: boolean; // Added isAdmin prop
+  isAdmin?: boolean;
 };
 
 const DashboardSidebar: React.FC<SidebarProps> = ({ isCollapsed, setIsCollapsed, isAdmin }) => {
